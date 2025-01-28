@@ -8,13 +8,18 @@ function addTrack(title, artist, filePath, artworkPath) {
   const twoMonthsFromNow = new Date();
   twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
 
-  // Load existing tracks
+  // Debugging logs added for troubleshooting
+  console.log("Tracks file path:", tracksFile);
+
   let tracks = [];
   if (fs.existsSync(tracksFile)) {
+    console.log("Tracks file exists. Reading...");
     tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
+    console.log("Existing tracks:", tracks);
+  } else {
+    console.log("Tracks file does not exist. It will be created.");
   }
 
-  // Create new track object
   const newTrack = {
     id: Date.now(),
     title,
@@ -24,14 +29,16 @@ function addTrack(title, artist, filePath, artworkPath) {
     expiresOn: twoMonthsFromNow.toISOString(),
   };
 
-  // Add new track to the list
   tracks.push(newTrack);
+  console.log("Updated tracks array:", tracks);
 
-  // Save back to file
-  fs.writeFileSync(tracksFile, JSON.stringify(tracks, null, 2));
-  console.log(`Track "${title}" by "${artist}" added successfully.`);
+  try {
+    fs.writeFileSync(tracksFile, JSON.stringify(tracks, null, 2));
+    console.log(`Track "${title}" by "${artist}" added successfully.`);
+  } catch (err) {
+    console.error("Error writing to tracks.json:", err);
+  }
 }
-
 // Input new track details here
 const title = "RUSH ME"; // Change this
 const artist = "TOASTED"; // Change this
