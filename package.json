@@ -1,21 +1,9 @@
-{
-  "name": "dubvault",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "engines": {
-    "node": "18.x"
-  },
-  // rest of package.json
-}
 
 
 {
   "name": "dubvault",
   "version": "1.0.0",
-  "description": "DubVault: A UK-based subscription platform delivering exclusive, unreleased dubs (2 per week) to DJs and fans of underground dance music.",
-  "main": "index.js",
+  "description": "Your underground dance music app",
   "scripts": {
     "start": "node index.js"
   },
