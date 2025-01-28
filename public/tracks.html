@@ -1,49 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tracks - DubVault</title>
-  <link rel="stylesheet" href="/style.css">
-  <style>
-    /* Additional styling for tracks list */
-    .track-list {
-      list-style: none;
-      margin: 2rem auto;
-      padding: 0;
-      max-width: 800px;
-    }
-
-    .track-item {
-      display: flex;
-      flex-direction: column;
-      background: #111;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .track-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .track-item h3 {
-      margin: 0 0 0.5rem 0;
-      color: #f99;
-    }
-
-    .track-item p {
-      margin: 0.3rem 0;
-      color: #ccc;
-    }
-  </style>
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- Header with logo + navigation -->
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -55,14 +19,9 @@
     </nav>
   </header>
 
-  <!-- Main content -->
   <main class="content-container fade-in">
-    <h1>Available Tracks</h1>
-    <p>Explore the latest exclusive dubs available for download.</p>
-
-    <ul class="track-list">
-      <!-- Tracks will be dynamically inserted here -->
-    </ul>
+    <h1>All Tracks</h1>
+    <ul class="track-list"></ul>
   </main>
 
   <footer>
@@ -70,40 +29,35 @@
   </footer>
 
   <script>
-    // Function to load and display tracks
     async function loadTracks() {
-  try {
-    const response = await fetch('/api/tracks');
-    console.log("Response status:", response.status);
+      try {
+        const response = await fetch('/api/tracks');
+        if (!response.ok) {
+          throw new Error('Failed to fetch tracks');
+        }
+        const tracks = await response.json();
+        console.log('Fetched tracks:', tracks);
 
-    if (!response.ok) throw new Error(`Failed to fetch tracks: ${response.statusText}`);
+        const trackListEl = document.querySelector('.track-list');
+        trackListEl.innerHTML = '';
 
-    const tracks = await response.json();
-    console.log("Fetched tracks:", tracks);
+        tracks.forEach(track => {
+          const li = document.createElement('li');
+          li.className = 'track-item';
+          li.innerHTML = `
+            <h3>${track.title}</h3>
+            <p>Artist: ${track.artist}</p>
+            <p>Expires: ${new Date(track.expiresOn).toLocaleDateString()}</p>
+            <p><a href="/downloads/${track.filePath}" download>Download</a></p>
+          `;
+          trackListEl.appendChild(li);
+        });
+      } catch (err) {
+        console.error('Error loading tracks:', err);
+      }
+    }
 
-    const trackList = document.querySelector('.track-list');
-    trackList.innerHTML = '';
-
-    tracks.forEach(track => {
-      const trackItem = `
-        <li class="track-item">
-          <h3>${track.title}</h3>
-          <p><strong>Artist:</strong> ${track.artist}</p>
-          <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
-          <p>
-            <a href="/${track.filePath}" download>Download Track</a>
-          </p>
-          ${track.artworkPath 
-            ? `<img src="/${track.artworkPath}" alt="${track.title} Artwork" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">`
-            : ''}
-        </li>`;
-      trackList.innerHTML += trackItem;
-    });
-  } catch (err) {
-    console.error("Error loading tracks:", err);
-  }
-}
-loadTracks();
+    loadTracks();
   </script>
 </body>
 </html>
