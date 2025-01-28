@@ -199,17 +199,23 @@ app.get('/tracks', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tracks.html'));
 });
 
-app.get('/api/tracks', async (req, res) => {
-  try {
-    const tracksFile = path.join(__dirname, 'tracks.json');
-    console.log("Tracks file path:", tracksFile);
-    
-    const data = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
-    console.log("Tracks loaded:", data);
-    res.json(data);
-  } catch (err) {
-    console.error('Error loading tracks.json:', err);
-    res.status(500).json({ error: 'Failed to load tracks' });
+app.get('/api/tracks', (req, res) => {
+  const tracksFile = path.join(__dirname, 'tracks.json');
+  console.log("Tracks file path:", tracksFile);
+
+  let tracks = [];
+  if (fs.existsSync(tracksFile)) {
+    try {
+      tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
+      console.log("Tracks loaded successfully:", tracks);
+      res.json(tracks);
+    } catch (err) {
+      console.error("Error parsing tracks.json:", err);
+      res.status(500).json({ error: "Error reading tracks.json" });
+    }
+  } else {
+    console.log("tracks.json file does not exist.");
+    res.status(404).json({ error: "Tracks not found" });
   }
 });
 

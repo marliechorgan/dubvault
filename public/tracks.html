@@ -72,38 +72,38 @@
   <script>
     // Function to load and display tracks
     async function loadTracks() {
-      try {
-        const response = await fetch('/api/tracks');
-        if (!response.ok) throw new Error('Failed to fetch tracks');
-        
-        const tracks = await response.json();
-        console.log('Tracks fetched:', tracks);
+  try {
+    const response = await fetch('/api/tracks');
+    console.log("Response status:", response.status);
 
-        const trackList = document.querySelector('.track-list');
-        trackList.innerHTML = '';
+    if (!response.ok) throw new Error(`Failed to fetch tracks: ${response.statusText}`);
 
-        tracks.forEach(track => {
-          const trackItem = `
-            <li class="track-item">
-              <h3>${track.title}</h3>
-              <p><strong>Artist:</strong> ${track.artist}</p>
-              <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
-              <p>
-                <a href="/uploads/${track.filePath}" download>Download Track</a>
-              </p>
-              ${track.artworkPath 
-                ? `<img src="/artworks/${track.artworkPath}" alt="${track.title} Artwork" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">` 
-                : ''}
-            </li>`;
-          trackList.innerHTML += trackItem;
-        });
-      } catch (err) {
-        console.error('Error loading tracks:', err);
-      }
-    }
+    const tracks = await response.json();
+    console.log("Fetched tracks:", tracks);
 
-    // Load tracks on page load
-    loadTracks();
+    const trackList = document.querySelector('.track-list');
+    trackList.innerHTML = '';
+
+    tracks.forEach(track => {
+      const trackItem = `
+        <li class="track-item">
+          <h3>${track.title}</h3>
+          <p><strong>Artist:</strong> ${track.artist}</p>
+          <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
+          <p>
+            <a href="/${track.filePath}" download>Download Track</a>
+          </p>
+          ${track.artworkPath 
+            ? `<img src="/${track.artworkPath}" alt="${track.title} Artwork" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">`
+            : ''}
+        </li>`;
+      trackList.innerHTML += trackItem;
+    });
+  } catch (err) {
+    console.error("Error loading tracks:", err);
+  }
+}
+loadTracks();
   </script>
 </body>
 </html>
