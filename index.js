@@ -22,8 +22,16 @@ const fetch = require('node-fetch'); // node-fetch@2
 const Papa = require('papaparse');
 const ffmpeg = require('fluent-ffmpeg');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const cors = require('cors');
+const compression = require('compression');
 
 const app = express();
+
+// Security Middleware
+app.use(helmet());
+app.use(cors());
+app.use(compression());
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
