@@ -6,5 +6,21 @@
     "filePath": "1684438742500-451234567-track1.mp3",
     "artworkPath": "1684438742500-987654321-art1.jpg",
     "expiresOn": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "id": 1738092533611,
+    "title": "RUSH ME",
+    "artist": "TOASTED",
+    "filePath": "uploads/RUSH ME DEMO 3.wav",
+    "artworkPath": "453CF750-02E9-48E7-9D10-260844ED0E8F.JPG",
+    "expiresOn": "2025-03-28T19:28:53.608Z"
+  },
+  {
+    "id": 1738092573689,
+    "title": "RUSH ME",
+    "artist": "TOASTED",
+    "filePath": "uploads/RUSH ME DEMO 3.wav",
+    "artworkPath": "453CF750-02E9-48E7-9D10-260844ED0E8F.JPG",
+    "expiresOn": "2025-03-28T19:29:33.685Z"
   }
 ]

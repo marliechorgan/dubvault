@@ -33,9 +33,9 @@ function addTrack(title, artist, filePath, artworkPath) {
 }
 
 // Input new track details here
-const title = "Example Track"; // Change this
-const artist = "Example Artist"; // Change this
-const filePath = "uploads/example.mp3"; // Adjust as needed
-const artworkPath = "artworks/example.jpg"; // Adjust as needed
+const title = "RUSH ME"; // Change this
+const artist = "TOASTED"; // Change this
+const filePath = "uploads/RUSH ME DEMO 3.wav"; // Adjust as needed
+const artworkPath = "453CF750-02E9-48E7-9D10-260844ED0E8F.JPG"; // Adjust as needed
 
 addTrack(title, artist, filePath, artworkPath);
