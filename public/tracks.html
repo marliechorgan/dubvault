@@ -58,17 +58,13 @@
             </div>
           `;
 
-          // Decide on snippet or full track
+          // Audio preview snippet or full track
           let audioFile = '';
           if (track.snippetFile && track.snippetFile.trim() !== '') {
-            // We have a snippet file. Use that for the <audio> preview
-            audioFile = `/uploads/${track.snippetFile}`; // e.g. snippet in /uploads/snippets
+            audioFile = `/uploads/${track.snippetFile}`;
           } else {
-            // Fallback: use the entire track
             audioFile = `/uploads/${track.filePath}`;
           }
-
-          // Audio preview
           const audioPreviewHTML = `
             <audio controls style="margin-top: 1rem; width: 100%;">
               <source src="${audioFile}" type="audio/mpeg">
@@ -77,25 +73,67 @@
           `;
 
           // Download button
-          const downloadButtonHTML = `
-            <a href="/download/${track.filePath}" class="button">Download</a>
-          `;
+          const downloadButtonHTML = `<a href="/download/${track.filePath}" class="button">Download</a>`;
 
           // Countdown
           const countdownId = `countdown-${track.id}`;
           const countdownHTML = `<p class="countdown" id="${countdownId}">Loading...</p>`;
+
+          // Rating display & input
+          let ratingHTML = '';
+          if (track.avgRating) {
+            ratingHTML = `<p>Average Rating: <strong>${track.avgRating}/10</strong></p>`;
+          } else {
+            ratingHTML = `<p>No ratings yet</p>`;
+          }
+
+          // We'll add a rating form
+          const rateFormId = `rateForm-${track.id}`;
+          ratingHTML += `
+            <form id="${rateFormId}" style="margin-top:1rem;">
+              <label for="rating-${track.id}">Rate (1-10):</label>
+              <input type="number" id="rating-${track.id}" name="rating" min="1" max="10" style="width:60px;">
+              <button type="submit" class="button" style="padding:0.5rem 1rem;">Submit Rating</button>
+            </form>
+          `;
 
           li.innerHTML = `
             <div>
               ${trackInfoHTML}
               ${audioPreviewHTML}
               ${countdownHTML}
+              ${ratingHTML}
             </div>
             ${downloadButtonHTML}
           `;
           trackListEl.appendChild(li);
 
           startCountdown(track, countdownId);
+
+          // Add event for rating
+          const rateForm = document.getElementById(rateFormId);
+          rateForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const ratingValue = document.getElementById(`rating-${track.id}`).value;
+            fetch('/api/rate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ trackId: track.id, rating: ratingValue })
+            })
+            .then(r => r.json())
+            .then(data => {
+              if (data.success) {
+                alert("Rating submitted!");
+                location.reload(); // quick reload to refresh average
+              } else {
+                alert(data.error || "Error rating track");
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              alert("Error rating track");
+            });
+          });
         });
       })
       .catch(err => {

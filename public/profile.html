@@ -25,13 +25,12 @@
     <p id="membership-status">Loading your membership status...</p>
 
     <div id="subscription-actions" style="margin-top: 2rem; display: none;">
-      <!-- If user is not paid, we show "Upgrade" -->
-      <form action="/create-checkout-session" method="POST" id="upgrade-form">
+      <!-- Upgrade or Cancel -->
+      <form action="/create-checkout-session" method="POST" id="upgrade-form" style="margin-bottom:1rem;">
         <button type="submit" class="button">Upgrade (£20/month)</button>
       </form>
 
-      <!-- If user is paid, we show "Cancel Subscription" -->
-      <form action="/cancel-sub" method="POST" id="cancel-form" style="margin-top:1rem;">
+      <form action="/cancel-sub" method="POST" id="cancel-form" style="display:none;">
         <button type="submit" class="button" style="background: #b33; border-color: #c44;">
           Cancel Subscription
         </button>
@@ -48,29 +47,23 @@
   </footer>
 
   <script>
-    // Example: fetch user info from an /api/me endpoint if you have one
-    // This is just an example. If you don't have /api/me, you'd do something else.
     async function fetchProfile() {
       try {
-        const res = await fetch('/api/me'); // you must implement /api/me in index.js
+        const res = await fetch('/api/me');
         if (!res.ok) {
-          // Not logged in or error
           document.getElementById('membership-status').textContent =
             "Error loading profile or not logged in.";
           return;
         }
         const data = await res.json();
-        // data might contain isPaid: true/false, username, etc.
         if (data.isPaid) {
           document.getElementById('membership-status').textContent = 
             "You have an active subscription. Enjoy unlimited downloads!";
-          // Show "Cancel Subscription" button, hide "Upgrade" form
           document.getElementById('cancel-form').style.display = 'block';
           document.getElementById('upgrade-form').style.display = 'none';
         } else {
           document.getElementById('membership-status').textContent =
-            "You do not currently have a paid subscription.";
-          // Show "Upgrade" button, hide "Cancel Subscription"
+            "You do not have a paid subscription.";
           document.getElementById('cancel-form').style.display = 'none';
           document.getElementById('upgrade-form').style.display = 'block';
         }
@@ -82,10 +75,6 @@
       }
     }
 
-    // If you don't have /api/me, you could set membership status from a server-generated script block
-    // or some other approach.
-
-    // For now, let's call fetchProfile
     fetchProfile();
 
     // Logout

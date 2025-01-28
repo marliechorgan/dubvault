@@ -30,7 +30,7 @@ body {
   }
 }
 
-/* Header & Nav */
+/* Header & Footer */
 header, footer {
   background-color: #000;
   padding: 2rem;
@@ -74,7 +74,7 @@ header, footer {
   border: 2px solid #fff;
 }
 
-/* Footer */
+/* Footer styling */
 footer {
   margin-top: 3rem;
   color: #aaa;
@@ -117,12 +117,12 @@ footer p {
   transform: translateY(-2px);
 }
 
-/* Form container */
+/* Form container (submit, login, contact forms) */
 .form-container {
   display: flex;
   flex-direction: column;
   margin: 2rem auto;
-  max-width: 550px; 
+  max-width: 550px;
   text-align: left;
   gap: 1.5rem;
 }
@@ -152,13 +152,57 @@ footer p {
   min-height: 120px;
   resize: vertical;
 }
-.form-container button.button {
-  font-size: 1.1rem;
-  padding: 1rem 2rem;
-  margin-top: 1rem;
+
+/* Two side-by-side boxes for producers & DJs */
+.benefits-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+.benefit-box {
+  background: #111;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 280px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+.benefit-box:hover {
+  transform: translateY(-5px);
+}
+.benefit-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
+.benefit-box h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
 }
 
-/* Track List + Snippet */
+/* Infographic section (Home) */
+.infographic-section {
+  margin: 3rem 0;
+}
+.infographic-section h2 {
+  margin-bottom: 1rem;
+}
+.infographic-section p {
+  color: #ccc;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.infographic-section img {
+  display: block;
+  margin: 0 auto;
+  max-width: 80%;
+  border: 1px solid #444;
+  border-radius: 5px;
+}
+
+/* Track List + Ratings */
 .track-list {
   list-style: none;
   margin-top: 2rem;
@@ -198,26 +242,18 @@ footer p {
   margin-top: 1rem;
 }
 
-/* Toast styling */
-.toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #222;
-  color: #fff;
-  padding: 1rem 2rem;
-  border: 2px solid #444;
-  border-radius: 8px;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* Remove purple visited/focus states */
+a, a:link, a:visited, a:hover, a:active, a:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
-.toast.show {
-  opacity: 1;
+button:focus, button:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
-
-/* 404 page styling if needed (public/404.html) */
+button::-moz-focus-inner {
+  border: 0 !important;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

@@ -1,3 +1,11 @@
+/*******************************************************
+ * index.js
+ * 
+ * Updated:
+ *  - Adds /api/me route for user info
+ *  - Adds rating system: /api/rate, /api/ratings
+ *  - Watermark function stub to apply a signature
+ *******************************************************/
 require('dotenv').config();
 
 const express = require('express');
@@ -5,11 +13,13 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // Using bcryptjs for no native binding issues
 const multer = require('multer');
 const Stripe = require('stripe');
 const paypal = require('@paypal/checkout-server-sdk'); // optional
-const fetch = require('node-fetch'); // Make sure you're on node-fetch@2
+
+// For fetching & parsing the published Google Sheet CSV
+const fetch = require('node-fetch'); // node-fetch@2
 const Papa = require('papaparse');
 
 const app = express();
@@ -44,7 +54,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ========== SESSION SETUP ==========
+// ========== SESSION ==========
 app.use(session({
   secret: process.env.SESSION_SECRET || 'change_this_secret',
   resave: false,
@@ -59,7 +69,7 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ========== STATIC FOLDERS ==========
+// ========== STATIC FILES ==========
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -111,9 +121,8 @@ function generateErrorPage(title, message) {
   `;
 }
 
-// ========== LOAD TRACKS FROM CSV WITH SNIPPET SUPPORT ==========
-const CSV_URL = process.env.G_SHEET_CSV_URL 
-  || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSeATgiiUTKcZ2iE8MT042dbOY3b0x4BnVlXCtD-XkiUA_dLqBkQDIfbdkJsnUglfR0nokeFBllfMy/pub?output=csv';
+// ========== LOAD TRACKS FROM CSV ==========
+const CSV_URL = process.env.G_SHEET_CSV_URL || 'YOUR_CSV_LINK_HERE';
 
 async function fetchTracksFromPublishedCSV() {
   const response = await fetch(CSV_URL);
@@ -122,8 +131,7 @@ async function fetchTracksFromPublishedCSV() {
     header: true,
     skipEmptyLines: true
   });
-  // If you added a "SnippetFile" column to the CSV, we can read that here
-  // e.g. columns: ID, Title, Artist, FileName, ArtworkName, ExpiresOn, SnippetFile
+  // Columns: ID, Title, Artist, FileName, ArtworkName, ExpiresOn, SnippetFile
   return parsed.data.map(row => ({
     id: row.ID,
     title: row.Title,
@@ -131,8 +139,35 @@ async function fetchTracksFromPublishedCSV() {
     filePath: row.FileName,
     artworkPath: row.ArtworkName,
     expiresOn: row.ExpiresOn,
-    snippetFile: row.SnippetFile // optional new column
+    snippetFile: row.SnippetFile
   }));
+}
+
+// ========== RATING LOGIC ==========
+// We'll store ratings in a local `ratings.json` with structure:
+// [
+//   { trackId: "1001", userId: 12345, rating: 8 },
+//   ...
+// ]
+function getRatings() {
+  try {
+    return JSON.parse(fs.readFileSync('ratings.json', 'utf8'));
+  } catch {
+    return [];
+  }
+}
+function saveRatings(ratings) {
+  fs.writeFileSync('ratings.json', JSON.stringify(ratings, null, 2));
+}
+
+// ========== WATERMARK STUB ==========
+// In reality, you'd use an audio library (e.g. fluent-ffmpeg) to embed a signature.
+function applyWatermarkToAudio(filePath, signature) {
+  // Placeholder: we won't actually modify the file
+  // In a real solution, you'd do something like:
+  // ffmpeg input -> apply filter or overlay a beep at low volume -> output
+  // For now, we just log that a watermark was "applied".
+  console.log(`Applying watermark "${signature}" to ${filePath} (stub)`);
 }
 
 // ========== ROUTES ==========
@@ -155,10 +190,7 @@ app.get('/tracks', (req, res) => {
 // SUBMIT (protected)
 app.get('/submit.html', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage(
-      'Unauthorized',
-      'You must be logged in to submit a track.'
-    ));
+    return res.status(401).send(generateErrorPage('Unauthorized','You must be logged in to submit a track.'));
   }
   res.sendFile(path.join(__dirname, 'public', 'submit.html'));
 });
@@ -166,10 +198,7 @@ app.get('/submit.html', (req, res) => {
 // PROFILE (protected)
 app.get('/profile.html', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage(
-      'Unauthorized',
-      'You must be logged in to view your profile.'
-    ));
+    return res.status(401).send(generateErrorPage('Unauthorized','You must be logged in to view your profile.'));
   }
   res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });
@@ -202,11 +231,26 @@ app.get('/cancel.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
-// ========== /api/tracks (CSV) ==========
+// ========== /api/tracks (Loads from CSV) ==========
 app.get('/api/tracks', async (req, res) => {
   try {
     const tracks = await fetchTracksFromPublishedCSV();
-    res.json(tracks);
+    // We'll also gather average ratings for each track, if any
+    const ratings = getRatings();
+    
+    // For each track, compute average rating
+    const ratedTracks = tracks.map(t => {
+      const trackRatings = ratings.filter(r => r.trackId === t.id.toString());
+      if (trackRatings.length > 0) {
+        const avg = trackRatings.reduce((acc, rr) => acc + rr.rating, 0) / trackRatings.length;
+        t.avgRating = parseFloat(avg.toFixed(1)); // 1 decimal
+      } else {
+        t.avgRating = null; // no ratings yet
+      }
+      return t;
+    });
+
+    res.json(ratedTracks);
   } catch (err) {
     console.error('Error fetching tracks from CSV:', err);
     res.status(500).json({ error: 'Failed to load tracks' });
@@ -216,54 +260,46 @@ app.get('/api/tracks', async (req, res) => {
 // ========== DOWNLOAD (membership gated) ==========
 app.get('/download/:fileName', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage(
-      'Unauthorized',
-      'You must be logged in to download tracks.'
-    ));
+    return res.status(401).send(generateErrorPage('Unauthorized','You must be logged in to download tracks.'));
   }
   const users = getUsers();
   const user = users.find(u => u.id === req.session.userId);
   if (!user || !user.isPaid) {
-    return res.status(403).send(generateErrorPage(
-      'Forbidden',
-      'You need a paid membership to download tracks.'
-    ));
+    return res.status(403).send(generateErrorPage('Forbidden','You need a paid membership to download tracks.'));
   }
   const filePath = path.join(__dirname, 'uploads', req.params.fileName);
   if (!fs.existsSync(filePath)) {
-    return res.status(404).send(generateErrorPage('Not Found', 'File does not exist.'));
+    return res.status(404).send(generateErrorPage('Not Found','File does not exist.'));
   }
   res.download(filePath);
 });
 
-// ========== SUBMIT (UPLOAD) ==========
+// ========== SUBMIT (UPLOAD) with Watermark ==========
 // STILL writes to tracks.json if you want user submissions stored locally.
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
 ]), (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage(
-      'Unauthorized',
-      'You must be logged in to submit a track.'
-    ));
+    return res.status(401).send(generateErrorPage('Unauthorized','You must be logged in to submit a track.'));
   }
 
   const { title, artist } = req.body;
   const trackFile = req.files['trackFile'] ? req.files['trackFile'][0] : null;
   const artworkFile = req.files['artwork'] ? req.files['artwork'][0] : null;
   if (!trackFile) {
-    return res.status(400).send(generateErrorPage(
-      'No Track File',
-      'You must upload a track file.'
-    ));
+    return res.status(400).send(generateErrorPage('No Track File','You must upload a track file.'));
   }
 
   const twoMonthsFromNow = new Date();
   twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
 
-  // Save to local "tracks.json" (not the CSV). 
-  // If you want to add them to the sheet, you'd do that manually or create separate logic.
+  // ========== Watermark the audio ==========  
+  // We'll apply a unique signature. For example, user ID + timestamp
+  const watermarkSignature = `UserID-${req.session.userId}-${Date.now()}`;
+  applyWatermarkToAudio(path.join(__dirname, 'uploads', trackFile.filename), watermarkSignature);
+
+  // Save to local "tracks.json" (not the CSV).
   let localTracks = [];
   try {
     localTracks = JSON.parse(fs.readFileSync('tracks.json', 'utf8'));
@@ -310,7 +346,8 @@ app.post('/submit', upload.fields([
       <p><strong>Artist:</strong> ${newTrack.artist}</p>
       ${artworkFile ? `<p><strong>Artwork Uploaded:</strong> ${artworkFile.originalname}</p>` : ''}
       <p><strong>Expires On:</strong> ${twoMonthsFromNow.toDateString()}</p>
-      <p>We added your track to the local library. (This won't show up in the Google Sheet CSV.)</p>
+      <p>Watermark signature: ${watermarkSignature}</p>
+      <p>We added your track to the local library. (Not in the Google Sheet.)</p>
       <a href="/" class="button">Home</a>
     </main>
     <footer>
@@ -338,7 +375,7 @@ app.post('/api/register', async (req, res) => {
   return res.json({ success: true, redirect: '/profile.html' });
 });
 
-// LOGIN (We’ll show a toast in login.html after success)
+// LOGIN
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
@@ -351,7 +388,6 @@ app.post('/api/login', async (req, res) => {
     return res.status(400).json({ error: 'Invalid username or password' });
   }
   req.session.userId = user.id;
-  // On success, we send back JSON that triggers a toast in the front-end
   return res.json({ success: true, redirect: '/profile.html' });
 });
 
@@ -359,6 +395,55 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/logout', (req, res) => {
   req.session.destroy();
   res.json({ success: true, redirect: '/' });
+});
+
+// ========== /api/me (User Info) ==========
+app.get('/api/me', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not logged in' });
+  }
+  const users = getUsers();
+  const user = users.find(u => u.id === req.session.userId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  res.json({
+    username: user.username,
+    isPaid: user.isPaid
+  });
+});
+
+// ========== RATING API ==========
+// POST /api/rate => { trackId, rating }  (1-10)
+app.post('/api/rate', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'You must be logged in to rate' });
+  }
+  const { trackId, rating } = req.body;
+  const numRating = parseInt(rating, 10);
+  if (!trackId || isNaN(numRating) || numRating < 1 || numRating > 10) {
+    return res.status(400).json({ error: 'Invalid rating or trackId' });
+  }
+
+  // Save rating
+  let ratings = getRatings();
+  // Check if user already rated this track
+  const existing = ratings.find(r => r.trackId === trackId && r.userId === req.session.userId);
+  if (existing) {
+    existing.rating = numRating; // update
+  } else {
+    ratings.push({ trackId, userId: req.session.userId, rating: numRating });
+  }
+  saveRatings(ratings);
+
+  res.json({ success: true });
+});
+
+// GET /api/ratings => returns all ratings (or you can filter by track)
+app.get('/api/ratings', (req, res) => {
+  // optional route if you want the front-end to fetch all raw ratings
+  const ratings = getRatings();
+  res.json(ratings);
 });
 
 // ========== STRIPE CHECKOUT EXAMPLE ==========
@@ -375,7 +460,8 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency: 'gbp',
             product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 1000, // e.g. £10
+            // e.g. £20
+            unit_amount: 2000,
             recurring: { interval: 'month' }
           },
           quantity: 1,
@@ -438,11 +524,9 @@ app.post('/api/checkout/paypal', async (req, res) => {
 
 // ========== 404 NOT FOUND PAGE ==========
 app.use((req, res) => {
-  // For any route not matched above, serve a custom 404 page
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // ========== START SERVER ==========
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DubVault running on port ${PORT}`));
