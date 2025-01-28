@@ -24,7 +24,7 @@ app.use(compression());
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
@@ -79,7 +79,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ========== HELPERS ==========
+// ========== HELPER FUNCTIONS ==========
 function getUsers() {
   try {
     return JSON.parse(fs.readFileSync('users.json', 'utf8'));
@@ -137,7 +137,7 @@ function saveRatings(ratings) {
   fs.writeFileSync('ratings.json', JSON.stringify(ratings, null, 2));
 }
 
-// Local tracks (no CSV)
+// Local tracks approach
 function getTracks() {
   try {
     return JSON.parse(fs.readFileSync('tracks.json', 'utf8'));
@@ -149,7 +149,7 @@ function saveTracks(tracks) {
   fs.writeFileSync('tracks.json', JSON.stringify(tracks, null, 2));
 }
 
-// ADVANCED WATERMARK
+// ========== ADVANCED WATERMARK ==========
 async function applyUniqueWatermark(inputPath, outputPath, userId) {
   return new Promise((resolve, reject) => {
     const beepPath = path.join(__dirname, 'watermarks', 'beep.mp3');
@@ -168,7 +168,7 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
         },
         {
           filter: 'volume',
-          options: '0.2', // quiet
+          options: '0.2',
           inputs: 'delayedBeep',
           outputs: 'quietBeep'
         },
@@ -199,23 +199,30 @@ app.get('/tracks', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tracks.html'));
 });
 
+// ========== SINGLE /api/tracks ROUTE (Local) ==========
 app.get('/api/tracks', (req, res) => {
-  const tracksFile = path.join(__dirname, 'tracks.json');
-  console.log("Tracks file path:", tracksFile);
+  try {
+    console.log("Fetching tracks from tracks.json...");
+    const allTracks = getTracks();
+    console.log("All Tracks:", allTracks);
 
-  let tracks = [];
-  if (fs.existsSync(tracksFile)) {
-    try {
-      tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
-      console.log("Tracks loaded successfully:", tracks);
-      res.json(tracks);
-    } catch (err) {
-      console.error("Error parsing tracks.json:", err);
-      res.status(500).json({ error: "Error reading tracks.json" });
-    }
-  } else {
-    console.log("tracks.json file does not exist.");
-    res.status(404).json({ error: "Tracks not found" });
+    const ratings = getRatings();
+    // Merge rating data
+    const mergedTracks = allTracks.map(t => {
+      const trackRatings = ratings.filter(r => r.trackId === String(t.id));
+      let avgRating = null;
+      if (trackRatings.length > 0) {
+        const sum = trackRatings.reduce((acc, rr) => acc + rr.rating, 0);
+        avgRating = parseFloat((sum / trackRatings.length).toFixed(1));
+      }
+      return { ...t, avgRating };
+    });
+    console.log("Merged track data:", mergedTracks);
+
+    res.json(mergedTracks);
+  } catch (err) {
+    console.error("Error reading tracks.json:", err);
+    res.status(500).json({ error: 'Failed to load tracks' });
   }
 });
 
@@ -256,33 +263,7 @@ app.get('/cancel.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
-// ========== /api/tracks (Local) ==========
-app.get('/api/tracks', (req, res) => {
-  try {
-    const allTracks = getTracks(); 
-    const ratings = getRatings();
-
-    // Merge rating
-    const tracks = allTracks.map(t => {
-      const trackRatings = ratings.filter(r => r.trackId === String(t.id));
-      let avgRating = null;
-      if (trackRatings.length > 0) {
-        const sum = trackRatings.reduce((acc, rr) => acc + rr.rating, 0);
-        avgRating = parseFloat((sum / trackRatings.length).toFixed(1));
-      }
-      return {
-        ...t,
-        avgRating
-      };
-    });
-    res.json(tracks);
-  } catch (err) {
-    console.error('Error reading local tracks:', err);
-    res.status(500).json({ error: 'Failed to load tracks' });
-  }
-});
-
-// DOWNLOAD (membership gating)
+// ========== DOWNLOAD (membership gating) ==========
 app.get('/download/:fileName', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send(generateErrorPage('Unauthorized','Log in first.'));
@@ -299,7 +280,7 @@ app.get('/download/:fileName', (req, res) => {
   res.download(filePath);
 });
 
-// SUBMIT (UPLOAD) w/ watermark
+// ========== SUBMIT (UPLOAD) w/ watermark ==========
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
@@ -307,7 +288,6 @@ app.post('/submit', upload.fields([
   if (!req.session.userId) {
     return res.status(401).send(generateErrorPage('Unauthorized','Log in to submit.'));
   }
-
   const { title, artist } = req.body;
   const trackFile = req.files.trackFile ? req.files.trackFile[0] : null;
   const artworkFile = req.files.artwork ? req.files.artwork[0] : null;
@@ -322,6 +302,7 @@ app.post('/submit', upload.fields([
   const watermarkedOutput = path.join(__dirname, 'uploads', `wm_${trackFile.filename}`);
 
   try {
+    console.log(`[Submit] Watermarking track for user: ${req.session.userId}`);
     await applyUniqueWatermark(inputPath, watermarkedOutput, req.session.userId);
     fs.unlinkSync(inputPath);
     fs.renameSync(watermarkedOutput, inputPath);
@@ -346,6 +327,7 @@ app.post('/submit', upload.fields([
   };
   localTracks.push(newTrack);
   saveTracks(localTracks);
+  console.log('[Submit] New track saved to tracks.json:', newTrack);
 
   res.send(`
   <!DOCTYPE html>
@@ -385,7 +367,8 @@ app.post('/submit', upload.fields([
   `);
 });
 
-// AUTH
+// ========== AUTH ROUTES ==========
+
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
@@ -456,7 +439,7 @@ app.get('/api/ratings', (req, res) => {
   res.json(getRatings());
 });
 
-// STRIPE checkout
+// ========== STRIPE CHECKOUT ==========
 app.post('/create-checkout-session', async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send('You must be logged in first.');
