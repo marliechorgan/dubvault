@@ -4,6 +4,31 @@
   <meta charset="UTF-8">
   <title>About - DubVault</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    .benefits-section {
+      margin-top: 2rem;
+    }
+    .benefits-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .benefit-box {
+      background-color: #f0f0f0;
+      color: #000;
+      padding: 20px;
+      margin: 10px;
+      flex: 1;
+      min-width: 200px;
+      border-radius: 8px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .benefit-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+    }
+  </style>
 </head>
 <body>
   <!-- Header with logo + nav -->
@@ -39,46 +64,18 @@
 
     <!-- Producers & DJs Benefit Boxes (Similar to home page) -->
     <section class="benefits-section">
-      <h2>How Producers & DJs Benefit</h2>
+      <h2>Producers & DJs</h2>
       <div class="benefits-container">
         <div class="benefit-box">
-          <!-- Placeholder producer icon; replace with your own image or keep placeholder -->
-          <img src="https://via.placeholder.com/80x80.png?text=Producer" 
-               alt="Producer Icon" class="benefit-icon">
-          <h3>Producers</h3>
-          <p>
-            • Earn direct payouts for each dub. <br>
-            • Get early, exclusive exposure to our passionate audience. <br>
-            • Connect directly with DJs who crave new underground sounds.
-          </p>
+          <h3>For Producers</h3>
+          <p>Get your music heard by top DJs and gain exposure in the underground scene.</p>
         </div>
         <div class="benefit-box">
-          <!-- Placeholder DJ icon -->
-          <img src="https://via.placeholder.com/80x80.png?text=DJ" 
-               alt="DJ Icon" class="benefit-icon">
-          <h3>DJs</h3>
-          <p>
-            • Unlock unreleased tracks before the mainstream. <br>
-            • Keep your sets one step ahead with exclusive basslines. <br>
-            • Build your reputation on truly unique, fresh tunes.
-          </p>
+          <h3>For DJs</h3>
+          <p>Access exclusive, unreleased tracks to keep your sets fresh and unique.</p>
         </div>
       </div>
     </section>
-
-    <section>
-      <h2>Our Commitment</h2>
-      <p>
-        We aim to foster a genuine connection between artists, DJs, and fans. 
-        Our platform embraces a non-corporate vibe, emphasizing the raw, gritty energy 
-        of the UK’s underground dance floors. With fair payouts to producers and 
-        exclusive benefits to DJs, DubVault ensures everyone in the community wins.
-      </p>
-    </section>
   </main>
-
-  <footer>
-    <p>&copy; 2025 DubVault. All rights reserved.</p>
-  </footer>
 </body>
 </html>
