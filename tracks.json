@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1234567890000,
+    "title": "First Dub",
+    "artist": "DJ Sample",
+    "filePath": "1684438742500-451234567-track1.mp3",
+    "artworkPath": "1684438742500-987654321-art1.jpg",
+    "expiresOn": "2025-06-01T00:00:00.000Z"
+  }
+]

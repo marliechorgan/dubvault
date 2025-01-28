@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit a Track - DubVault</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header fade-in">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/tracks">Tracks</a>
+      <a href="/submit.html" class="active">Submit</a>
+      <a href="/profile.html">My Profile</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="content-container fade-in">
+    <h1>Submit a Track</h1>
+    <p>Upload your MP3/WAV plus optional artwork. Once approved, it stays exclusive on DubVault for 2 months.</p>
+
+    <!-- The form posts to /submit (defined in index.js) -->
+    <form action="/submit" method="POST" enctype="multipart/form-data" class="form-container">
+      <label for="title">Track Title</label>
+      <input 
+        type="text" 
+        name="title" 
+        id="title" 
+        placeholder="e.g. Midnight Roller" 
+        required
+      >
+
+      <label for="artist">Artist Name</label>
+      <input 
+        type="text" 
+        name="artist" 
+        id="artist" 
+        placeholder="Your Producer/DJ Name" 
+        required
+      >
+
+      <label for="trackFile">Upload Track (MP3/WAV)</label>
+      <input 
+        type="file" 
+        name="trackFile" 
+        id="trackFile" 
+        accept=".mp3, .wav"
+        required
+      >
+
+      <label for="artwork">Upload Artwork (optional)</label>
+      <input 
+        type="file" 
+        name="artwork" 
+        id="artwork" 
+        accept="image/*"
+      >
+
+      <button type="submit" class="button">Submit Track</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 DubVault. All rights reserved.</p>
+  </footer>
+</body>
+</html>

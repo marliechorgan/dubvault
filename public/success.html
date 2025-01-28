@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Success - DubVault</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header fade-in">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/tracks">Tracks</a>
+      <a href="/submit.html">Submit</a>
+      <a href="/profile.html">My Profile</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/login.html">Login</a>
+    </nav>
+  </header>
+  <main class="content-container fade-in">
+    <h1>Payment Successful</h1>
+    <p>You are now subscribed to DubVault at £10/month. You can download any track for 2 months!</p>
+    <form action="/create-portal-session" method="POST">
+      <input type="hidden" id="session-id" name="session_id" value="">
+      <button type="submit" class="button">Manage Subscription</button>
+    </form>
+    <a href="/tracks" class="button">Go to Tracks</a>
+  </main>
+  <footer>
+    <p>&copy; 2025 DubVault. All rights reserved.</p>
+  </footer>
+  <script>
+    // If you need the session_id from query params:
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('session_id')) {
+        document.getElementById('session-id').value = params.get('session_id');
+      }
+    });
+  </script>
+</body>
+</html>

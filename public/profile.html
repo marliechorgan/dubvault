@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile - DubVault</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header fade-in">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/tracks">Tracks</a>
+      <a href="/submit.html">Submit</a>
+      <a href="/profile.html" class="active">My Profile</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="content-container fade-in" id="profile-section">
+    <h1>My Profile</h1>
+    <p id="membership-status">Loading your membership status...</p>
+
+    <div id="subscription-actions" style="margin-top: 2rem; display: none;">
+      <!-- If user is not paid, we show "Upgrade" -->
+      <form action="/create-checkout-session" method="POST" id="upgrade-form">
+        <button type="submit" class="button">Upgrade (£20/month)</button>
+      </form>
+
+      <!-- If user is paid, we show "Cancel Subscription" -->
+      <form action="/cancel-sub" method="POST" id="cancel-form" style="margin-top:1rem;">
+        <button type="submit" class="button" style="background: #b33; border-color: #c44;">
+          Cancel Subscription
+        </button>
+      </form>
+    </div>
+
+    <form id="logout-form" style="margin-top:2rem;">
+      <button type="submit" class="button">Logout</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 DubVault. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Example: fetch user info from an /api/me endpoint if you have one
+    // This is just an example. If you don't have /api/me, you'd do something else.
+    async function fetchProfile() {
+      try {
+        const res = await fetch('/api/me'); // you must implement /api/me in index.js
+        if (!res.ok) {
+          // Not logged in or error
+          document.getElementById('membership-status').textContent =
+            "Error loading profile or not logged in.";
+          return;
+        }
+        const data = await res.json();
+        // data might contain isPaid: true/false, username, etc.
+        if (data.isPaid) {
+          document.getElementById('membership-status').textContent = 
+            "You have an active subscription. Enjoy unlimited downloads!";
+          // Show "Cancel Subscription" button, hide "Upgrade" form
+          document.getElementById('cancel-form').style.display = 'block';
+          document.getElementById('upgrade-form').style.display = 'none';
+        } else {
+          document.getElementById('membership-status').textContent =
+            "You do not currently have a paid subscription.";
+          // Show "Upgrade" button, hide "Cancel Subscription"
+          document.getElementById('cancel-form').style.display = 'none';
+          document.getElementById('upgrade-form').style.display = 'block';
+        }
+        document.getElementById('subscription-actions').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('membership-status').textContent =
+          "Unable to load membership status.";
+      }
+    }
+
+    // If you don't have /api/me, you could set membership status from a server-generated script block
+    // or some other approach.
+
+    // For now, let's call fetchProfile
+    fetchProfile();
+
+    // Logout
+    document.getElementById('logout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch('/api/logout', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = data.redirect;
+        } else {
+          alert(data.error || 'Logout error');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('An error occurred during logout.');
+      }
+    });
+  </script>
+</body>
+</html>

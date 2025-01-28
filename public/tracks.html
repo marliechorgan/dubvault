@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tracks - DubVault</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header fade-in">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/tracks" class="active">Tracks</a>
+      <a href="/submit.html">Submit</a>
+      <a href="/profile.html">My Profile</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="content-container fade-in">
+    <h1>Available Tracks</h1>
+    <p>Check out these dubs. Each track shows an expiry date below!</p>
+
+    <ul id="trackList" class="track-list"></ul>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 DubVault. All rights reserved.</p>
+  </footer>
+
+  <script>
+    fetch('/api/tracks')
+      .then(response => response.json())
+      .then(tracks => {
+        const trackListEl = document.getElementById('trackList');
+
+        tracks.forEach(track => {
+          const li = document.createElement('li');
+          li.className = 'track-item';
+
+          // Artwork
+          let artworkHTML = '';
+          if (track.artworkPath) {
+            artworkHTML = `<img src="/artworks/${track.artworkPath}" alt="${track.title} Artwork">`;
+          }
+
+          // Title & Artist
+          const trackInfoHTML = `
+            <div class="track-details">
+              ${artworkHTML}
+              <div>
+                <h3>${track.title}</h3>
+                <p>by ${track.artist}</p>
+              </div>
+            </div>
+          `;
+
+          // Decide on snippet or full track
+          let audioFile = '';
+          if (track.snippetFile && track.snippetFile.trim() !== '') {
+            // We have a snippet file. Use that for the <audio> preview
+            audioFile = `/uploads/${track.snippetFile}`; // e.g. snippet in /uploads/snippets
+          } else {
+            // Fallback: use the entire track
+            audioFile = `/uploads/${track.filePath}`;
+          }
+
+          // Audio preview
+          const audioPreviewHTML = `
+            <audio controls style="margin-top: 1rem; width: 100%;">
+              <source src="${audioFile}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          `;
+
+          // Download button
+          const downloadButtonHTML = `
+            <a href="/download/${track.filePath}" class="button">Download</a>
+          `;
+
+          // Countdown
+          const countdownId = `countdown-${track.id}`;
+          const countdownHTML = `<p class="countdown" id="${countdownId}">Loading...</p>`;
+
+          li.innerHTML = `
+            <div>
+              ${trackInfoHTML}
+              ${audioPreviewHTML}
+              ${countdownHTML}
+            </div>
+            ${downloadButtonHTML}
+          `;
+          trackListEl.appendChild(li);
+
+          startCountdown(track, countdownId);
+        });
+      })
+      .catch(err => {
+        console.error('Failed to fetch tracks:', err);
+      });
+
+    function startCountdown(track, elementId) {
+      const el = document.getElementById(elementId);
+
+      function updateTimer() {
+        const now = Date.now();
+        const expiry = new Date(track.expiresOn).getTime();
+        const distance = expiry - now;
+        if (distance <= 0) {
+          el.textContent = "Expired";
+          clearInterval(timerId);
+          return;
+        }
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        el.textContent = `Expires in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+      }
+      const timerId = setInterval(updateTimer, 1000);
+      updateTimer();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "dubvault",
+  "version": "1.0.0",
+  "description": "DubVault: A UK-based subscription platform delivering exclusive, unreleased dubs (2 per week) to DJs and fans of underground dance music.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "express",
+    "stripe",
+    "paypal",
+    "multer",
+    "music",
+    "subscription",
+    "uk"
+  ],
+  "author": "Your Name or Team",
+  "license": "ISC",
+  "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^2.7.0",
+    "papaparse": "^5.5.1",
+    "session": "^0.1.0",
+    "stripe": "^12.18.0"
+  }
+}
