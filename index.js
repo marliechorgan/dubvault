@@ -1,11 +1,11 @@
 /*******************************************************
  * index.js
  * 
- * Key Features:
- * 1) CSV-based track listing (with sample-tracks.csv).
- * 2) Ratings system (/api/rate).
- * 3) Advanced Watermarking using fluent-ffmpeg to overlay beep.mp3.
- * 4) Sample Tracks included if G_SHEET_CSV_URL references your published CSV.
+ * Enhanced for:
+ * - Larger mobile-friendly UI
+ * - CSV-based track listing with advanced watermarking
+ * - Ratings, snippet generation, top-rated endpoint
+ * - Rate-limiting for /api
  *******************************************************/
 require('dotenv').config();
 
@@ -18,26 +18,26 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const Stripe = require('stripe');
 const paypal = require('@paypal/checkout-server-sdk');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // node-fetch@2
 const Papa = require('papaparse');
 const ffmpeg = require('fluent-ffmpeg');
-const rateLimit = require('express-rate-limit'); // Rate limiting middleware
+const rateLimit = require('express-rate-limit');
 
+// Initialize express
 const app = express();
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
 app.use('/api', apiLimiter);
 
-
-// ========== STRIPE ==========
+// ========== STRIPE SETUP ==========
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
-// ========== PAYPAL (optional) ==========
+// ========== PAYPAL SETUP ==========
 const Environment = process.env.NODE_ENV === 'production'
   ? paypal.core.LiveEnvironment
   : paypal.core.SandboxEnvironment;
@@ -75,6 +75,7 @@ app.use(session({
     sameSite: 'lax'
   }
 }));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -130,47 +131,7 @@ function generateErrorPage(title, message) {
   `;
 }
 
-// ========== CSV TRACKS ==========
-const CSV_URL = process.env.G_SHEET_CSV_URL || path.join(__dirname, 'sample-tracks.csv');
-async function fetchTracksFromPublishedCSV() {
-  // If CSV_URL is a local file, read from disk
-  if (CSV_URL.startsWith(__dirname) || fs.existsSync(CSV_URL)) {
-    // local file
-    const rawCsv = fs.readFileSync(CSV_URL, 'utf8');
-    const parsed = Papa.parse(rawCsv, {
-      header: true,
-      skipEmptyLines: true
-    });
-    return parsed.data.map(row => ({
-      id: row.ID,
-      title: row.Title,
-      artist: row.Artist,
-      filePath: row.FileName,
-      artworkPath: row.ArtworkName,
-      expiresOn: row.ExpiresOn,
-      snippetFile: row.SnippetFile
-    }));
-  } else {
-    // remote link
-    const response = await fetch(CSV_URL);
-    const rawCsv = await response.text();
-    const parsed = Papa.parse(rawCsv, {
-      header: true,
-      skipEmptyLines: true
-    });
-    return parsed.data.map(row => ({
-      id: row.ID,
-      title: row.Title,
-      artist: row.Artist,
-      filePath: row.FileName,
-      artworkPath: row.ArtworkName,
-      expiresOn: row.ExpiresOn,
-      snippetFile: row.SnippetFile
-    }));
-  }
-}
-
-// ========== RATINGS ==========
+// Ratings
 function getRatings() {
   try {
     return JSON.parse(fs.readFileSync('ratings.json', 'utf8'));
@@ -182,30 +143,54 @@ function saveRatings(ratings) {
   fs.writeFileSync('ratings.json', JSON.stringify(ratings, null, 2));
 }
 
-// ========== WATERMARKING ==========
-function applyWatermarkToAudio(inputPath, outputPath, style = 'beep') {
-  return new Promise((resolve, reject) => {
-    const randomOffset = Math.floor(Math.random() * 20) + 10; // 10-30 sec
-    const beepPath = path.join(__dirname, 'watermarks', 'beep.mp3');
+// CSV tracks
+const CSV_URL = process.env.G_SHEET_CSV_URL || path.join(__dirname, 'sample-tracks.csv');
+async function fetchTracksFromCSV() {
+  if (fs.existsSync(CSV_URL)) {
+    // local CSV
+    const rawCsv = fs.readFileSync(CSV_URL, 'utf8');
+    const parsed = Papa.parse(rawCsv, { header: true, skipEmptyLines: true });
+    return parsed.data;
+  } else {
+    // remote
+    const response = await fetch(CSV_URL);
+    const rawCsv = await response.text();
+    const parsed = Papa.parse(rawCsv, { header: true, skipEmptyLines: true });
+    return parsed.data;
+  }
+}
 
-    const filters = [];
-    if (style === 'beep') {
-      filters.push(
-        { filter: 'adelay', options: `${randomOffset * 1000}|${randomOffset * 1000}`, inputs: '[1:a]', outputs: 'delayedBeep' },
-        { filter: 'volume', options: '0.3', inputs: 'delayedBeep', outputs: 'quietBeep' },
-        { filter: 'amix', options: 'inputs=2:duration=longest:dropout_transition=3', inputs: ['0:a', 'quietBeep'], outputs: 'mixed' }
-      );
-    } else if (style === 'tts') {
-      // Text-to-speech overlay
-      console.log(`[Watermark] Using TTS for watermark on ${inputPath}`);
-    }
+// Advanced Watermarking
+async function applyBeepWatermark(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const randomOffset = Math.floor(Math.random() * 20) + 10; // 10-30 seconds
+    const beepPath = path.join(__dirname, 'watermarks', 'beep.mp3');
 
     ffmpeg(inputPath)
       .input(beepPath)
-      .complexFilter(filters, 'mixed')
-      .outputOptions(['-map 0:v?', '-map "[mixed]"']) // Preserve video streams if any
+      .complexFilter([
+        {
+          filter: 'adelay',
+          options: `${randomOffset * 1000}|${randomOffset * 1000}`,
+          inputs: '[1:a]',
+          outputs: 'delayedBeep'
+        },
+        {
+          filter: 'volume',
+          options: '0.3',
+          inputs: 'delayedBeep',
+          outputs: 'quietBeep'
+        },
+        {
+          filter: 'amix',
+          options: 'inputs=2:duration=longest:dropout_transition=3',
+          inputs: ['0:a','quietBeep'],
+          outputs: 'mixed'
+        }
+      ], 'mixed')
+      .outputOptions(['-map 0:v?', '-map "[mixed]"'])
       .on('end', () => resolve())
-      .on('error', (err) => reject(err))
+      .on('error', err => reject(err))
       .save(outputPath);
   });
 }
@@ -213,14 +198,20 @@ function applyWatermarkToAudio(inputPath, outputPath, style = 'beep') {
 // ========== ROUTES ==========
 
 // HOME
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/about.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'about.html')));
-app.get('/tracks', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tracks.html')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/about.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
+});
+app.get('/tracks', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'tracks.html'));
+});
 
 // SUBMIT (protected)
 app.get('/submit.html', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage('Unauthorized','You must be logged in to submit.'));
+    return res.status(401).send(generateErrorPage('Unauthorized','Log in to submit a track.'));
   }
   res.sendFile(path.join(__dirname, 'public', 'submit.html'));
 });
@@ -228,81 +219,155 @@ app.get('/submit.html', (req, res) => {
 // PROFILE (protected)
 app.get('/profile.html', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage('Unauthorized','Must be logged in to view profile.'));
+    return res.status(401).send(generateErrorPage('Unauthorized','Log in to view profile.'));
   }
   res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });
 
-// FAQ, CONTACT, LOGIN, REGISTER
-app.get('/faq.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'faq.html')));
-app.get('/contact.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/register.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'register.html')));
+app.get('/faq.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'faq.html'));
+});
+app.get('/contact.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
+app.get('/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+app.get('/register.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+app.get('/success.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'success.html'));
+});
+app.get('/cancel.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
+});
 
-// SUCCESS & CANCEL
-app.get('/success.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'success.html')));
-app.get('/cancel.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel.html')));
-
-// ========== /api/tracks (Loads from CSV) ==========
+// ========== /api/tracks (filtered, rated) ==========
 app.get('/api/tracks', async (req, res) => {
   try {
-    const tracks = await fetchTracksFromPublishedCSV();
+    const { genre, artist, minRating } = req.query;
+    let { page = 1, limit = 10 } = req.query;
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+
+    const data = await fetchTracksFromCSV();
     const ratings = getRatings();
-    const ratedTracks = tracks.map(t => {
-      const trackRatings = ratings.filter(r => r.trackId === String(t.id));
+
+    // Convert CSV rows into track objects
+    let tracks = data.map(row => {
+      const trackId = row.ID ? row.ID.toString() : null;
+      // compute avg rating
+      const trackRatings = ratings.filter(r => r.trackId === trackId);
+      let avgRating = null;
       if (trackRatings.length > 0) {
-        const avg = trackRatings.reduce((acc, rr) => acc + rr.rating, 0) / trackRatings.length;
-        t.avgRating = parseFloat(avg.toFixed(1));
-      } else {
-        t.avgRating = null;
+        const sum = trackRatings.reduce((acc, rr) => acc + rr.rating, 0);
+        avgRating = parseFloat((sum / trackRatings.length).toFixed(1));
       }
-      return t;
+
+      return {
+        id: trackId,
+        title: row.Title,
+        artist: row.Artist,
+        filePath: row.FileName,
+        artworkPath: row.ArtworkName,
+        expiresOn: row.ExpiresOn,
+        snippetFile: row.SnippetFile,
+        genre: row.Genre || null,
+        avgRating
+      };
     });
-    res.json(ratedTracks);
+
+    // Filter
+    if (genre) {
+      tracks = tracks.filter(t => (t.genre||'').toLowerCase() === genre.toLowerCase());
+    }
+    if (artist) {
+      tracks = tracks.filter(t => (t.artist||'').toLowerCase().includes(artist.toLowerCase()));
+    }
+    if (minRating) {
+      tracks = tracks.filter(t => t.avgRating !== null && t.avgRating >= parseFloat(minRating));
+    }
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginated = tracks.slice(startIndex, endIndex);
+
+    res.json({
+      total: tracks.length,
+      page,
+      limit,
+      tracks: paginated
+    });
   } catch (err) {
     console.error('Error fetching CSV tracks:', err);
     res.status(500).json({ error: 'Failed to load tracks' });
   }
 });
 
-// NEW ROUTE: GENERATE SNIPPETS
-app.post('/api/tracks/:id/snippet', async (req, res) => {
-  const trackId = req.params.id;
-  const localTracks = JSON.parse(fs.readFileSync('tracks.json', 'utf8'));
-  const track = localTracks.find((t) => t.id === parseInt(trackId, 10));
-
-  if (!track) {
-    return res.status(404).json({ error: 'Track not found' });
-  }
-
-  const inputPath = path.join(__dirname, 'uploads', track.filePath);
-  const snippetPath = path.join(__dirname, 'snippets', `snippet_${track.filePath}`);
+// ========== /api/tracks/top-rated (Cool Feature) ==========
+app.get('/api/tracks/top-rated', async (req, res) => {
   try {
-    ffmpeg(inputPath)
-      .setStartTime('0:30') // Start snippet at 30 seconds
-      .setDuration(10) // Snippet duration
-      .output(snippetPath)
-      .on('end', () => res.json({ success: true, snippetPath }))
-      .on('error', (err) => {
-        console.error('Error generating snippet:', err);
-        res.status(500).json({ error: 'Snippet generation failed' });
-      })
-      .run();
+    const data = await fetchTracksFromCSV();
+    const ratings = getRatings();
+
+    let tracks = data.map(row => {
+      const trackId = row.ID ? row.ID.toString() : null;
+      const trackRatings = ratings.filter(r => r.trackId === trackId);
+      let avgRating = null;
+      if (trackRatings.length > 0) {
+        const sum = trackRatings.reduce((acc, rr) => acc + rr.rating, 0);
+        avgRating = parseFloat((sum / trackRatings.length).toFixed(1));
+      }
+      return {
+        id: trackId,
+        title: row.Title,
+        artist: row.Artist,
+        avgRating: avgRating || 0
+      };
+    });
+
+    // sort descending by avgRating
+    tracks.sort((a, b) => b.avgRating - a.avgRating);
+    // return top 5
+    const topRated = tracks.slice(0, 5);
+
+    res.json({ topRated });
   } catch (err) {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Snippet generation failed' });
+    console.error('Error computing top-rated:', err);
+    res.status(500).json({ error: 'Failed to load top-rated tracks' });
   }
 });
 
-// DOWNLOAD (membership gating)
+// ========== /api/tracks/search? q=someTitleOrId (Cool Feature) ==========
+app.get('/api/tracks/search', async (req, res) => {
+  const q = (req.query.q || '').toLowerCase();
+  if (!q) {
+    return res.status(400).json({ error: 'Missing search query ?q=' });
+  }
+  try {
+    const data = await fetchTracksFromCSV();
+    const results = data.filter(row =>
+      (row.Title||'').toLowerCase().includes(q) ||
+      (row.ID||'').toLowerCase().includes(q)
+    );
+    res.json({ results });
+  } catch (err) {
+    console.error('Error searching tracks:', err);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+// ========== DOWNLOAD (membership gating) ==========
 app.get('/download/:fileName', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage('Unauthorized','Log in to download tracks.'));
+    return res.status(401).send(generateErrorPage('Unauthorized','Log in to download.'));
   }
   const users = getUsers();
   const user = users.find(u => u.id === req.session.userId);
   if (!user || !user.isPaid) {
-    return res.status(403).send(generateErrorPage('Forbidden','Paid membership required to download.'));
+    return res.status(403).send(generateErrorPage('Forbidden','Paid membership required.'));
   }
   const filePath = path.join(__dirname, 'uploads', req.params.fileName);
   if (!fs.existsSync(filePath)) {
@@ -311,45 +376,42 @@ app.get('/download/:fileName', (req, res) => {
   res.download(filePath);
 });
 
-// SUBMIT (UPLOAD) with advanced watermark
+// ========== SUBMIT (UPLOAD) with advanced beep watermark ==========
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
 ]), async (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).send(generateErrorPage('Unauthorized','Log in to submit.'));
+    return res.status(401).send(generateErrorPage('Unauthorized','You must be logged in to submit.'));
   }
+
   const { title, artist } = req.body;
   const trackFile = req.files['trackFile'] ? req.files['trackFile'][0] : null;
   const artworkFile = req.files['artwork'] ? req.files['artwork'][0] : null;
   if (!trackFile) {
-    return res.status(400).send(generateErrorPage('No Track File','You must upload an audio file.'));
+    return res.status(400).send(generateErrorPage('No Track File','Upload a track file.'));
   }
 
   const twoMonthsFromNow = new Date();
   twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
 
-  // Create a new path for watermarked output
+  // Watermark
   const inputPath = path.join(__dirname, 'uploads', trackFile.filename);
   const watermarkedOutput = path.join(__dirname, 'uploads', `wm_${trackFile.filename}`);
-
-  // Watermark signature approach: beep overlay
   try {
-    await applyWatermarkToAudio(inputPath, watermarkedOutput);
-    // Remove original un-watermarked file, rename the watermarked one
+    await applyBeepWatermark(inputPath, watermarkedOutput);
     fs.unlinkSync(inputPath);
     fs.renameSync(watermarkedOutput, inputPath);
   } catch (err) {
-    console.error('[Submit] Watermark error:', err);
-    // fallback: keep the original if watermarking fails
+    console.error('[Watermark] Error applying beep overlay:', err);
   }
 
-  // Save to local "tracks.json"
+  // Save to local tracks.json
   let localTracks = [];
   try {
     localTracks = JSON.parse(fs.readFileSync('tracks.json', 'utf8'));
   } catch (err) {
-    console.warn("tracks.json not found, creating new...");
+    console.warn('tracks.json not found; creating new...');
   }
   const newTrack = {
     id: Date.now(),
@@ -388,10 +450,10 @@ app.post('/submit', upload.fields([
       <h1>Track Submitted</h1>
       <p><strong>Title:</strong> ${newTrack.title}</p>
       <p><strong>Artist:</strong> ${newTrack.artist}</p>
-      ${artworkFile ? `<p><strong>Artwork:</strong> ${artworkFile.originalname}</p>` : ''}
+      ${artworkFile ? `<p><strong>Artwork Uploaded:</strong> ${artworkFile.originalname}</p>` : ''}
       <p><strong>Expires On:</strong> ${twoMonthsFromNow.toDateString()}</p>
-      <p>Advanced watermark applied!</p>
-      <p>We added your track to the local library. (Not in the Google Sheet.)</p>
+      <p>Watermark overlay applied!</p>
+      <p>We added your track to the local library. (Not in your main CSV unless you add it manually.)</p>
       <a href="/" class="button">Home</a>
     </main>
     <footer>
@@ -402,7 +464,8 @@ app.post('/submit', upload.fields([
   `);
 });
 
-// AUTH
+// ========== AUTH ROUTES ==========
+
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
@@ -416,6 +479,7 @@ app.post('/api/register', async (req, res) => {
   req.session.userId = newUser.id;
   return res.json({ success: true, redirect: '/profile.html' });
 });
+
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
@@ -430,6 +494,7 @@ app.post('/api/login', async (req, res) => {
   req.session.userId = user.id;
   return res.json({ success: true, redirect: '/profile.html' });
 });
+
 app.post('/api/logout', (req, res) => {
   req.session.destroy();
   res.json({ success: true, redirect: '/' });
@@ -448,11 +513,10 @@ app.get('/api/me', (req, res) => {
   res.json({ username: user.username, isPaid: user.isPaid });
 });
 
-
 // RATING
 app.post('/api/rate', (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ error: 'You must be logged in to rate' });
+    return res.status(401).json({ error: 'Must be logged in to rate' });
   }
   const { trackId, rating } = req.body;
   const numRating = parseInt(rating, 10);
@@ -487,7 +551,7 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency: 'gbp',
             product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 2000, // e.g., £20
+            unit_amount: 2000, // e.g. £20
             recurring: { interval: 'month' }
           },
           quantity: 1,
@@ -502,6 +566,7 @@ app.post('/create-checkout-session', async (req, res) => {
     return res.status(500).send('Could not create Stripe checkout session');
   }
 });
+
 app.post('/create-portal-session', async (req, res) => {
   const { session_id } = req.body;
   if (!session_id) return res.status(400).send('Missing session_id');
@@ -517,6 +582,7 @@ app.post('/create-portal-session', async (req, res) => {
     return res.status(500).send('Could not create portal session');
   }
 });
+
 app.get('/payment-success', async (req, res) => {
   const sessionId = req.query.session_id;
   if (!sessionId || !req.session.userId) {
@@ -539,16 +605,15 @@ app.get('/payment-success', async (req, res) => {
   }
 });
 
-// OPTIONAL PayPal
+// Optional PayPal
 app.post('/api/checkout/paypal', async (req, res) => {
-  return res.json({ error: 'PayPal not used. Stripe is primary.' });
+  return res.json({ error: 'PayPal not used. Stripe is primary now.' });
 });
 
-// 404 Not Found
+// 404
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// START SERVER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DubVault running on port ${PORT}`));
