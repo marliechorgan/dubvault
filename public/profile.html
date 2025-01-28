@@ -46,33 +46,27 @@
   </footer>
 
   <script>
-    async function fetchProfile() {
-      try {
-        const res = await fetch('/api/me');
-        if (!res.ok) {
-          document.getElementById('membership-status').textContent =
-            "Error loading profile or not logged in.";
-          return;
-        }
-        const data = await res.json();
-        if (data.isPaid) {
-          document.getElementById('membership-status').textContent = 
-            "You have an active subscription. Enjoy unlimited downloads!";
-          document.getElementById('cancel-form').style.display = 'block';
-          document.getElementById('upgrade-form').style.display = 'none';
-        } else {
-          document.getElementById('membership-status').textContent =
-            "You do not have a paid subscription.";
-          document.getElementById('cancel-form').style.display = 'none';
-          document.getElementById('upgrade-form').style.display = 'block';
-        }
-        document.getElementById('subscription-actions').style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        document.getElementById('membership-status').textContent =
-          "Unable to load membership status.";
-      }
+  async function fetchProfile() {
+  try {
+    const res = await fetch('/api/me');
+    if (res.status === 401) {
+      document.getElementById('membership-status').textContent =
+        "You are not logged in. Please log in to view your profile.";
+      document.getElementById('subscription-actions').style.display = 'none';
+      return;
     }
+    if (!res.ok) throw new Error("Failed to fetch profile");
+    const data = await res.json();
+    document.getElementById('membership-status').textContent = data.isPaid
+      ? "You have an active subscription. Enjoy unlimited downloads!"
+      : "You do not have a paid subscription.";
+    document.getElementById('subscription-actions').style.display = 'block';
+  } catch (err) {
+    console.error(err);
+    document.getElementById('membership-status').textContent =
+      "Error loading your profile. Please try again later.";
+  }
+}
 
     fetchProfile();
 
