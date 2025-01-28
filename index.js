@@ -199,6 +199,20 @@ app.get('/tracks', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tracks.html'));
 });
 
+app.get('/api/tracks', async (req, res) => {
+  try {
+    const tracksFile = path.join(__dirname, 'tracks.json');
+    console.log("Tracks file path:", tracksFile);
+    
+    const data = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
+    console.log("Tracks loaded:", data);
+    res.json(data);
+  } catch (err) {
+    console.error('Error loading tracks.json:', err);
+    res.status(500).json({ error: 'Failed to load tracks' });
+  }
+});
+
 // SUBMIT PAGE (protected)
 app.get('/submit.html', (req, res) => {
   if (!req.session.userId) {

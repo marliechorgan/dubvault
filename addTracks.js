@@ -20,6 +20,11 @@ function addTrack(title, artist, filePath, artworkPath) {
     console.log("Tracks file does not exist. It will be created.");
   }
 
+  console.log("Writing to tracks.json...");
+const tracksFile = path.join(__dirname, 'tracks.json');
+fs.writeFileSync(tracksFile, JSON.stringify(tracks, null, 2));
+console.log("Track added successfully!");
+
   const newTrack = {
     id: Date.now(),
     title,
@@ -39,6 +44,7 @@ function addTrack(title, artist, filePath, artworkPath) {
     console.error("Error writing to tracks.json:", err);
   }
 }
+
 // Input new track details here
 const title = "RUSH ME"; // Change this
 const artist = "TOASTED"; // Change this

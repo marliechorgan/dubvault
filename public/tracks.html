@@ -4,8 +4,44 @@
   <meta charset="UTF-8">
   <title>Tracks - DubVault</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Additional styling for tracks list */
+    .track-list {
+      list-style: none;
+      margin: 2rem auto;
+      padding: 0;
+      max-width: 800px;
+    }
+
+    .track-item {
+      display: flex;
+      flex-direction: column;
+      background: #111;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .track-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .track-item h3 {
+      margin: 0 0 0.5rem 0;
+      color: #f99;
+    }
+
+    .track-item p {
+      margin: 0.3rem 0;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
+  <!-- Header with logo + navigation -->
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
@@ -19,11 +55,14 @@
     </nav>
   </header>
 
+  <!-- Main content -->
   <main class="content-container fade-in">
     <h1>Available Tracks</h1>
-    <p>Check out these dubs. Each track shows an expiry date below!</p>
+    <p>Explore the latest exclusive dubs available for download.</p>
 
-    <ul id="trackList" class="track-list"></ul>
+    <ul class="track-list">
+      <!-- Tracks will be dynamically inserted here -->
+    </ul>
   </main>
 
   <footer>
@@ -31,132 +70,40 @@
   </footer>
 
   <script>
-    fetch('/api/tracks')
-      .then(response => response.json())
-      .then(tracks => {
-        const trackListEl = document.getElementById('trackList');
+    // Function to load and display tracks
+    async function loadTracks() {
+      try {
+        const response = await fetch('/api/tracks');
+        if (!response.ok) throw new Error('Failed to fetch tracks');
+        
+        const tracks = await response.json();
+        console.log('Tracks fetched:', tracks);
+
+        const trackList = document.querySelector('.track-list');
+        trackList.innerHTML = '';
 
         tracks.forEach(track => {
-          const li = document.createElement('li');
-          li.className = 'track-item';
-
-          // Artwork
-          let artworkHTML = '';
-          if (track.artworkPath) {
-            artworkHTML = `<img src="/artworks/${track.artworkPath}" alt="${track.title} Artwork">`;
-          }
-
-          // Title & Artist
-          const trackInfoHTML = `
-            <div class="track-details">
-              ${artworkHTML}
-              <div>
-                <h3>${track.title}</h3>
-                <p>by ${track.artist}</p>
-              </div>
-            </div>
-          `;
-
-          // Audio snippet or full track
-          let audioFile = track.snippetFile && track.snippetFile.trim() !== ''
-            ? `/uploads/${track.snippetFile}`
-            : `/uploads/${track.filePath}`;
-          const audioPreviewHTML = `
-            <audio controls style="margin-top: 1rem; width: 100%;">
-              <source src="${audioFile}" type="audio/mpeg">
-              Your browser does not support the audio element.
-            </audio>
-          `;
-
-          // Download
-          const downloadButtonHTML = `<a href="/download/${track.filePath}" class="button">Download</a>`;
-
-          // Expiry countdown
-          const countdownId = `countdown-${track.id}`;
-          const countdownHTML = `<p class="countdown" id="${countdownId}">Loading...</p>`;
-
-          // Ratings
-          let ratingHTML = '';
-          if (track.avgRating) {
-            ratingHTML = `<p>Average Rating: <strong>${track.avgRating}/10</strong></p>`;
-          } else {
-            ratingHTML = `<p>No ratings yet</p>`;
-          }
-          const rateFormId = `rateForm-${track.id}`;
-          ratingHTML += `
-            <form id="${rateFormId}" style="margin-top:1rem;">
-              <label for="rating-${track.id}">Rate (1-10):</label>
-              <input type="number" id="rating-${track.id}" name="rating" min="1" max="10" style="width:60px;">
-              <button type="submit" class="button" style="padding:0.5rem 1rem;">Submit Rating</button>
-            </form>
-          `;
-
-          li.innerHTML = `
-            <div>
-              ${trackInfoHTML}
-              ${audioPreviewHTML}
-              ${countdownHTML}
-              ${ratingHTML}
-            </div>
-            ${downloadButtonHTML}
-          `;
-
-          trackListEl.appendChild(li);
-
-          startCountdown(track, countdownId);
-
-          // rating form event
-          const rateForm = document.getElementById(rateFormId);
-          rateForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const ratingValue = document.getElementById(`rating-${track.id}`).value;
-            fetch('/api/rate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ trackId: track.id, rating: ratingValue })
-            })
-            .then(r => r.json())
-            .then(data => {
-              if (data.success) {
-                alert("Rating submitted!");
-                location.reload();
-              } else {
-                alert(data.error || "Error rating track");
-              }
-            })
-            .catch(err => {
-              console.error(err);
-              alert("Error rating track");
-            });
-          });
+          const trackItem = `
+            <li class="track-item">
+              <h3>${track.title}</h3>
+              <p><strong>Artist:</strong> ${track.artist}</p>
+              <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
+              <p>
+                <a href="/uploads/${track.filePath}" download>Download Track</a>
+              </p>
+              ${track.artworkPath 
+                ? `<img src="/artworks/${track.artworkPath}" alt="${track.title} Artwork" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">` 
+                : ''}
+            </li>`;
+          trackList.innerHTML += trackItem;
         });
-      })
-      .catch(err => {
-        console.error('Failed to fetch tracks:', err);
-      });
-
-    function startCountdown(track, elementId) {
-      const el = document.getElementById(elementId);
-
-      function updateTimer() {
-        const now = Date.now();
-        const expiry = new Date(track.expiresOn).getTime();
-        const distance = expiry - now;
-        if (distance <= 0) {
-          el.textContent = "Expired";
-          clearInterval(timerId);
-          return;
-        }
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        el.textContent = `Expires in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+      } catch (err) {
+        console.error('Error loading tracks:', err);
       }
-
-      const timerId = setInterval(updateTimer, 1000);
-      updateTimer();
     }
+
+    // Load tracks on page load
+    loadTracks();
   </script>
 </body>
 </html>
