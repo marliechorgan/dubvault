@@ -1,13 +1,14 @@
+<!-- public/profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>My Profile - DubVault</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -19,26 +20,10 @@
     </nav>
   </header>
 
-  <main class="content-container fade-in" id="profile-section">
+  <main class="content-container fade-in">
     <h1>My Profile</h1>
-    <p id="membership-status">Loading your membership status...</p>
-
-    <div id="subscription-actions" style="margin-top: 2rem; display: none;">
-      <!-- Upgrade or Cancel -->
-      <form action="/create-checkout-session" method="POST" id="upgrade-form" style="margin-bottom:1rem;">
-        <button type="submit" class="button">Upgrade (£20/month)</button>
-      </form>
-
-      <form action="/cancel-sub" method="POST" id="cancel-form" style="display:none;">
-        <button type="submit" class="button" style="background: #b33; border-color: #c44;">
-          Cancel Subscription
-        </button>
-      </form>
-    </div>
-
-    <form id="logout-form" style="margin-top:2rem;">
-      <button type="submit" class="button">Logout</button>
-    </form>
+    <p id="membership-status">Loading membership status...</p>
+    <button id="logoutButton">Logout</button>
   </main>
 
   <footer>
@@ -46,46 +31,46 @@
   </footer>
 
   <script>
-  async function fetchProfile() {
-  try {
-    const res = await fetch('/api/me');
-    if (res.status === 401) {
-      document.getElementById('membership-status').textContent =
-        "You are not logged in. Please log in to view your profile.";
-      document.getElementById('subscription-actions').style.display = 'none';
-      return;
-    }
-    if (!res.ok) throw new Error("Failed to fetch profile");
-    const data = await res.json();
-    document.getElementById('membership-status').textContent = data.isPaid
-      ? "You have an active subscription. Enjoy unlimited downloads!"
-      : "You do not have a paid subscription.";
-    document.getElementById('subscription-actions').style.display = 'block';
-  } catch (err) {
-    console.error(err);
-    document.getElementById('membership-status').textContent =
-      "Error loading your profile. Please try again later.";
-  }
-}
-
-    fetchProfile();
-
-    // Logout
-    document.getElementById('logout-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    async function fetchProfile() {
       try {
-        const res = await fetch('/api/logout', { method: 'POST' });
-        const data = await res.json();
+        const response = await fetch('/api/me');
+        if (!response.ok) {
+          if (response.status === 401) {
+            document.getElementById('membership-status').textContent = "You are not logged in.";
+            return;
+          }
+          throw new Error('Failed to fetch profile');
+        }
+        const data = await response.json();
+        document.getElementById('membership-status').textContent = data.isPaid
+          ? "You have an active subscription."
+          : "You do not have a paid subscription.";
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        document.getElementById('membership-status').textContent = "Error loading profile.";
+      }
+    }
+
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
         if (data.success) {
           window.location.href = data.redirect;
         } else {
-          alert(data.error || 'Logout error');
+          alert('Logout failed.');
         }
-      } catch (error) {
-        console.error(error);
-        alert('An error occurred during logout.');
+      } catch (err) {
+        console.error('Error during logout:', err);
+        alert('An error occurred. Please try again.');
       }
     });
+
+    // Fetch profile on page load
+    window.onload = fetchProfile;
   </script>
 </body>
 </html>

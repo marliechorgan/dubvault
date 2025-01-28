@@ -1,13 +1,14 @@
+<!-- public/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Login - DubVault</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -21,55 +22,48 @@
 
   <main class="content-container fade-in">
     <h1>Login</h1>
-    <form id="loginForm" class="form-container">
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" placeholder="Enter Username" required>
-
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Enter Password" required>
-
-      <button type="submit" class="button">Login</button>
+    <form id="loginForm">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
+      <br><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+      <br><br>
+      <button type="submit">Login</button>
     </form>
-
-    <p>Don’t have an account? <a href="/register.html">Register Here</a></p>
+    <p>Don't have an account? <a href="/register.html">Register here</a>.</p>
   </main>
-
-  <div id="toast" class="toast">Logged in successfully!</div> <!-- Hidden by default -->
 
   <footer>
     <p>&copy; 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
-    const form = document.getElementById('loginForm');
-    const toast = document.getElementById('toast');
+    const loginForm = document.getElementById('loginForm');
 
-    form.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+
+      const username = e.target.username.value.trim();
+      const password = e.target.password.value.trim();
 
       try {
-        const res = await fetch('/api/login', {
+        const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-        const data = await res.json();
-        if (data.error) {
-          alert(data.error);
-        } else if (data.success) {
-          // Show toast
-          toast.classList.add('show');
-          // Hide toast after 2 seconds, then redirect
-          setTimeout(() => {
-            toast.classList.remove('show');
-            window.location.href = data.redirect;
-          }, 2000);
+
+        const data = await response.json();
+
+        if (data.success) {
+          window.location.href = data.redirect;
+        } else {
+          alert(data.error || 'Login failed.');
         }
       } catch (err) {
-        console.error('Login error:', err);
-        alert('Something went wrong, please try again.');
+        console.error('Error during login:', err);
+        alert('An error occurred. Please try again.');
       }
     });
   </script>

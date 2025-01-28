@@ -1,3 +1,4 @@
+<!-- public/tracks.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,20 +45,34 @@
         tracks.forEach(track => {
           const li = document.createElement('li');
           li.className = 'track-item';
+          li.style.marginBottom = '1rem';
           li.innerHTML = `
             <h3>${track.title}</h3>
-            <p>Artist: ${track.artist}</p>
-            <p>Expires: ${new Date(track.expiresOn).toLocaleDateString()}</p>
-            <p><a href="/downloads/${track.filePath}" download>Download</a></p>
+            <p><strong>Artist:</strong> ${track.artist}</p>
+            <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
+            <p><a href="/uploads/${track.filePath}" download>Download Track</a></p>
+            ${
+              track.artworkPath
+                ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" style="max-width:200px; margin-top:1rem;">`
+                : ''
+            }
+            ${
+              track.avgRating !== null
+                ? `<p><strong>Average Rating:</strong> ${track.avgRating}/10</p>`
+                : ''
+            }
           `;
           trackListEl.appendChild(li);
         });
       } catch (err) {
         console.error('Error loading tracks:', err);
+        const trackListEl = document.querySelector('.track-list');
+        trackListEl.innerHTML = '<li>Error loading tracks. Please try again later.</li>';
       }
     }
 
-    loadTracks();
+    // Load tracks when the page loads
+    window.onload = loadTracks;
   </script>
 </body>
 </html>

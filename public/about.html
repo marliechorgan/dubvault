@@ -1,3 +1,4 @@
+<!-- public/about.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,28 +6,28 @@
   <title>About - DubVault</title>
   <link rel="stylesheet" href="/style.css">
   <style>
-    .benefits-section {
-      margin-top: 2rem;
-    }
     .benefits-container {
       display: flex;
       justify-content: space-around;
       flex-wrap: wrap;
-      gap: 1rem;
     }
     .benefit-box {
       background-color: #f0f0f0;
-      color: #000;
       padding: 20px;
       margin: 10px;
       flex: 1;
       min-width: 200px;
-      border-radius: 8px;
       transition: transform 0.3s, box-shadow 0.3s;
     }
     .benefit-box:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+      transform: translateY(-10px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    @media (max-width: 768px) {
+      .benefit-box {
+        flex: 1 1 100%;
+        margin: 10px 0;
+      }
     }
   </style>
 </head>
@@ -49,7 +50,7 @@
     <h1>About DubVault</h1>
     <p>
       DubVault is a UK-based platform specializing in exclusive, unreleased “dubs” 
-      tailored for the underground dance music scene. We focus on supporting local producers,
+      tailored for the underground dance music scene. We focus on supporting local producers.
     </p>
     <p>
       Our mission is simple: provide a steady pipeline of 
@@ -64,7 +65,7 @@
 
     <!-- Producers & DJs Benefit Boxes (Similar to home page) -->
     <section class="benefits-section">
-      <h2>Producers & DJs</h2>
+      <h2>How Producers & DJs Benefit</h2>
       <div class="benefits-container">
         <div class="benefit-box">
           <h3>For Producers</h3>

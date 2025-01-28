@@ -1,13 +1,14 @@
+<!-- public/register.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Register - DubVault</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -20,15 +21,15 @@
   </header>
 
   <main class="content-container fade-in">
-    <h1>Create Your DubVault Account</h1>
-    <form id="register-form" class="form-container">
-      <label for="username">Username</label>
-      <input type="text" id="username" required>
-
-      <label for="password">Password</label>
-      <input type="password" id="password" required>
-
-      <button type="submit" class="button">Register</button>
+    <h1>Register</h1>
+    <form id="registerForm">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
+      <br><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+      <br><br>
+      <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="/login.html">Login here</a>.</p>
   </main>
@@ -38,26 +39,31 @@
   </footer>
 
   <script>
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
+    const registerForm = document.getElementById('registerForm');
+
+    registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+
+      const username = e.target.username.value.trim();
+      const password = e.target.password.value.trim();
 
       try {
-        const res = await fetch('/api/register', {
+        const response = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-        const data = await res.json();
+
+        const data = await response.json();
+
         if (data.success) {
           window.location.href = data.redirect;
         } else {
-          alert(data.error || 'Registration error');
+          alert(data.error || 'Registration failed.');
         }
-      } catch (error) {
-        console.error(error);
-        alert('An error occurred.');
+      } catch (err) {
+        console.error('Error during registration:', err);
+        alert('An error occurred. Please try again.');
       }
     });
   </script>

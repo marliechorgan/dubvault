@@ -1,13 +1,14 @@
+<!-- public/submit.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Submit a Track - DubVault</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -20,47 +21,21 @@
   </header>
 
   <main class="content-container fade-in">
-    <h1>Submit a Track</h1>
-    <p>Upload your MP3/WAV plus optional artwork. Once approved, it stays exclusive on DubVault for 2 months.</p>
-
-    <!-- The form posts to /submit (defined in index.js) -->
-    <form action="/submit" method="POST" enctype="multipart/form-data" class="form-container">
-      <label for="title">Track Title</label>
-      <input 
-        type="text" 
-        name="title" 
-        id="title" 
-        placeholder="e.g. Midnight Roller" 
-        required
-      >
-
-      <label for="artist">Artist Name</label>
-      <input 
-        type="text" 
-        name="artist" 
-        id="artist" 
-        placeholder="Your Producer/DJ Name" 
-        required
-      >
-
-      <label for="trackFile">Upload Track (MP3/WAV)</label>
-      <input 
-        type="file" 
-        name="trackFile" 
-        id="trackFile" 
-        accept=".mp3, .wav"
-        required
-      >
-
-      <label for="artwork">Upload Artwork (optional)</label>
-      <input 
-        type="file" 
-        name="artwork" 
-        id="artwork" 
-        accept="image/*"
-      >
-
-      <button type="submit" class="button">Submit Track</button>
+    <h1>Submit a New Track</h1>
+    <form action="/submit" method="POST" enctype="multipart/form-data">
+      <label for="title">Track Title:</label>
+      <input type="text" id="title" name="title" required>
+      <br><br>
+      <label for="artist">Artist Name:</label>
+      <input type="text" id="artist" name="artist" required>
+      <br><br>
+      <label for="trackFile">Track File (MP3/WAV):</label>
+      <input type="file" id="trackFile" name="trackFile" accept=".mp3,.wav" required>
+      <br><br>
+      <label for="artwork">Artwork (Optional):</label>
+      <input type="file" id="artwork" name="artwork" accept="image/*">
+      <br><br>
+      <button type="submit">Submit Track</button>
     </form>
   </main>
 
