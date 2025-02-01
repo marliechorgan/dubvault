@@ -22,7 +22,9 @@
 
   <main class="content-container fade-in">
     <h1>My Profile</h1>
-    <p id="membership-status">Loading membership status...</p>
+    <!-- Spinner element shown while loading -->
+    <div id="spinner" class="spinner"></div>
+    <p id="membership-status" style="display:none;"></p>
     <button id="logoutButton" class="button">Logout</button>
   </main>
 
@@ -34,20 +36,26 @@
     async function fetchProfile() {
       try {
         const response = await fetch('/api/me');
+        const spinner = document.getElementById('spinner');
+        const statusEl = document.getElementById('membership-status');
+        spinner.style.display = 'none'; // Hide spinner once we have a response
         if (!response.ok) {
           if (response.status === 401) {
-            document.getElementById('membership-status').textContent = "You are not logged in.";
+            statusEl.style.display = 'block';
+            statusEl.textContent = "You are not logged in.";
             return;
           }
           throw new Error('Failed to fetch profile');
         }
         const data = await response.json();
-        const statusEl = document.getElementById('membership-status');
+        statusEl.style.display = 'block';
         statusEl.innerHTML = `<strong>Welcome, ${data.username}!</strong><br>` +
           (data.isPaid ? "You have an active subscription." : "You do not have a paid subscription.");
       } catch (err) {
         console.error('Error fetching profile:', err);
-        document.getElementById('membership-status').textContent = "Error loading profile.";
+        const statusEl = document.getElementById('membership-status');
+        statusEl.style.display = 'block';
+        statusEl.textContent = "Error loading profile.";
       }
     }
 
@@ -69,6 +77,7 @@
       }
     });
 
+    // Call fetchProfile as soon as the page loads
     window.onload = fetchProfile;
   </script>
 </body>
