@@ -1,38 +1,12 @@
-<!-- public/about.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>About - DubVault</title>
   <link rel="stylesheet" href="/style.css">
-  <style>
-    .benefits-container {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-    }
-    .benefit-box {
-      background-color: #f0f0f0;
-      padding: 20px;
-      margin: 10px;
-      flex: 1;
-      min-width: 200px;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .benefit-box:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-    @media (max-width: 768px) {
-      .benefit-box {
-        flex: 1 1 100%;
-        margin: 10px 0;
-      }
-    }
-  </style>
 </head>
 <body>
-  <!-- Header with logo + nav -->
+  <!-- Consistent header -->
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
@@ -48,35 +22,31 @@
 
   <main class="content-container fade-in">
     <h1>About DubVault</h1>
-    <p>
-      DubVault is a UK-based platform specializing in exclusive, unreleased “dubs” 
-      tailored for the underground dance music scene. We focus on supporting local producers.
-    </p>
-    <p>
-      Our mission is simple: provide a steady pipeline of 
-      <strong>2 fresh dubs every week</strong>, exclusively available on DubVault for at least 
-      two months. This gives our subscribers a unique edge—early access to tunes 
-      that remain unheard on mainstream platforms.
-    </p>
-    <p>
-      Above all, we value community. By giving local producers a direct line to DJs 
-      seeking fresh, exclusive sounds, we keep underground dance music thriving.
-    </p>
-
-    <!-- Producers & DJs Benefit Boxes (Similar to home page) -->
+    <p>DubVault is the heart of underground dance music. We empower independent producers, give top DJs exclusive access to fresh tracks, and nurture a community built on genuine passion.</p>
+    <p>Our artist-first philosophy ensures that creators receive fair compensation and maintain full ownership of their work. Tracks rise organically through community votes—not algorithms—ensuring that quality and authenticity prevail.</p>
+    <p>We also celebrate the rich history of genres like Drum & Bass, Speed Garage, and House, preserving their essence in every release.</p>
+    
     <section class="benefits-section">
-      <h2>How Producers & DJs Benefit</h2>
+      <h2>Our Core Values</h2>
       <div class="benefits-container">
         <div class="benefit-box">
-          <h3>For Producers</h3>
-          <p>Get your music heard by top DJs and gain exposure in the underground scene.</p>
+          <h3>Cultural Preservation</h3>
+          <p>We stand for keeping the spirit of underground music alive.</p>
         </div>
         <div class="benefit-box">
-          <h3>For DJs</h3>
-          <p>Access exclusive, unreleased tracks to keep your sets fresh and unique.</p>
+          <h3>Fair Compensation</h3>
+          <p>Every artist is rewarded upfront, ensuring sustainability and creative freedom.</p>
+        </div>
+        <div class="benefit-box">
+          <h3>Community Driven</h3>
+          <p>Our platform is built by and for music lovers, where every vote matters.</p>
         </div>
       </div>
     </section>
   </main>
+
+  <footer>
+    <p>&copy; 2025 DubVault. All rights reserved.</p>
+  </footer>
 </body>
 </html>

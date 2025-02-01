@@ -1,4 +1,3 @@
-<!-- public/profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +6,7 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
+  <!-- Consistent header -->
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
     <nav class="nav">
@@ -23,7 +23,7 @@
   <main class="content-container fade-in">
     <h1>My Profile</h1>
     <p id="membership-status">Loading membership status...</p>
-    <button id="logoutButton">Logout</button>
+    <button id="logoutButton" class="button">Logout</button>
   </main>
 
   <footer>
@@ -42,9 +42,9 @@
           throw new Error('Failed to fetch profile');
         }
         const data = await response.json();
-        document.getElementById('membership-status').textContent = data.isPaid
-          ? "You have an active subscription."
-          : "You do not have a paid subscription.";
+        const statusEl = document.getElementById('membership-status');
+        statusEl.innerHTML = `<strong>Welcome, ${data.username}!</strong><br>` +
+          (data.isPaid ? "You have an active subscription." : "You do not have a paid subscription.");
       } catch (err) {
         console.error('Error fetching profile:', err);
         document.getElementById('membership-status').textContent = "Error loading profile.";
@@ -69,7 +69,6 @@
       }
     });
 
-    // Fetch profile on page load
     window.onload = fetchProfile;
   </script>
 </body>
