@@ -1,5 +1,3 @@
-/* style.css */
-
 /* Import Rubik Mono One font */
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
@@ -10,20 +8,18 @@
   box-sizing: border-box;
 }
 
-/* Body with black background, bigger base font for desktop + media query for mobile */
 body {
   font-family: 'Rubik Mono One', sans-serif;
   background: #000;
   color: #fff;
   line-height: 1.8;
   text-align: center;
-  font-size: 16px; /* base for laptop/desktop */
+  font-size: 16px;
 }
 
-/* For smaller screens, scale up the font + elements */
 @media (max-width: 768px) {
   body {
-    font-size: 20px; /* bigger on mobile */
+    font-size: 20px;
   }
 }
 
@@ -33,9 +29,7 @@ body {
   opacity: 0;
 }
 @keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+  to { opacity: 1; }
 }
 
 /* Header & Footer */
@@ -51,16 +45,11 @@ header, footer {
   justify-content: center;
 }
 .logo {
-  display: block;
   margin: 0 auto 1rem auto;
-  height: 80px; /* bigger logo by default */
+  height: 80px;
 }
-
-/* For mobile, even bigger logo */
 @media (max-width: 768px) {
-  .logo {
-    height: 100px;
-  }
+  .logo { height: 100px; }
 }
 
 .nav {
@@ -74,17 +63,12 @@ header, footer {
   color: #fff;
   text-decoration: none;
   font-weight: 600;
-  font-size: 1rem; /* bigger nav font for desktop */
+  font-size: 1rem;
   padding: 0.8rem 1.5rem;
   border: 2px solid transparent;
   transition: all 0.3s ease;
 }
-.nav a:hover {
-  color: #000;
-  background: #fff;
-  border: 2px solid #fff;
-}
-.nav a.active {
+.nav a:hover, .nav a.active {
   background: #fff;
   color: #000;
   border: 2px solid #fff;
@@ -96,9 +80,7 @@ footer {
   color: #aaa;
   padding-bottom: 2rem;
 }
-footer p {
-  font-size: 1rem;
-}
+footer p { font-size: 1rem; }
 
 /* Main Content Container */
 .content-container {
@@ -128,12 +110,9 @@ footer p {
   margin: 0.5rem;
   transition: background 0.3s, transform 0.3s;
 }
-.button:hover {
-  background: #444;
-  transform: translateY(-2px);
-}
+.button:hover { background: #444; transform: translateY(-2px); }
 
-/* Form Container */
+/* Forms */
 .form-container {
   display: flex;
   flex-direction: column;
@@ -161,17 +140,28 @@ footer p {
 }
 .form-container input::placeholder,
 .form-container textarea::placeholder {
-  font-family: inherit;
   color: #777;
 }
-.form-container textarea {
-  min-height: 120px;
-  resize: vertical;
-}
+.form-container textarea { min-height: 120px; resize: vertical; }
 
 /* Home Page Sections */
-.benefits-section, .infographic-section {
-  margin: 3rem 0;
+.benefits-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.benefit-box {
+  background-color: #f0f0f0;
+  color: #000;
+  padding: 20px;
+  margin: 10px;
+  flex: 1;
+  min-width: 200px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.benefit-box:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Tracks Page */
@@ -191,59 +181,29 @@ footer p {
   animation: fadeIn 1s forwards;
   opacity: 0;
 }
-.track-item:nth-child(even) {
-  animation-delay: 0.2s;
-}
-.track-item:nth-child(odd) {
-  animation-delay: 0.4s;
-}
+.track-item:nth-child(even) { animation-delay: 0.2s; }
+.track-item:nth-child(odd) { animation-delay: 0.4s; }
 .track-item img {
   width: 100px;
   height: 100px;
   border-radius: 8px;
   object-fit: cover;
-  margin-right: 1rem;
+  margin-left: 1rem;
 }
 .track-details {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
   flex: 1;
   text-align: left;
+  padding-right: 1rem;
 }
-.track-details h3 {
-  margin-bottom: 0.5rem;
-}
-.track-details p {
-  margin-bottom: 0.25rem;
-}
-.track-details a {
-  color: #f99;
-  text-decoration: none;
-}
-.track-details a:hover {
-  text-decoration: underline;
-}
-.countdown {
-  color: #f99;
-  margin-top: 1rem;
-}
+.track-details h3 { margin-bottom: 0.5rem; }
+.track-details p { margin-bottom: 0.25rem; }
+.track-details a { color: #f99; text-decoration: none; }
+.track-details a:hover { text-decoration: underline; }
 
-/* Responsive for Nav and Tracks */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .nav {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .track-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .track-details {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .track-item img {
-    margin-bottom: 1rem;
-  }
+  .nav { flex-direction: column; gap: 1rem; }
+  .track-item { flex-direction: column; align-items: flex-start; }
+  .track-details { padding-right: 0; }
+  .track-item img { margin: 1rem 0 0 0; }
 }

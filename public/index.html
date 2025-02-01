@@ -1,38 +1,12 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Home - DubVault</title>
   <link rel="stylesheet" href="/style.css">
-  <style>
-    .benefits-container {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-    }
-    .benefit-box {
-      background-color: #f0f0f0;
-      padding: 20px;
-      margin: 10px;
-      flex: 1;
-      min-width: 200px;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .benefit-box:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-    @media (max-width: 768px) {
-      .benefit-box {
-        flex: 1 1 100%;
-        margin: 10px 0;
-      }
-    }
-  </style>
 </head>
 <body>
-  <!-- Header with logo + nav -->
+  <!-- Header with logo and navigation -->
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
@@ -41,34 +15,44 @@
       <a href="/tracks">Tracks</a>
       <a href="/submit.html">Submit</a>
       <a href="/profile.html">My Profile</a>
+      <a href="/merchandise">Merch</a>
+      <a href="/licensing">Licensing</a>
+      <a href="/remix">Remix</a>
       <a href="/faq.html">FAQ</a>
       <a href="/login.html">Login</a>
     </nav>
   </header>
 
+  <!-- Hero Section -->
   <main class="content-container fade-in">
-    <!-- Main content here -->
-    <section class="intro-section">
+    <section class="hero-section">
       <h1>Welcome to DubVault</h1>
-      <p>
-        The underground dance music platform. Enjoy <strong>2 fresh dubs every week</strong>.
-      </p>
+      <p>Where the underground lives. Discover exclusive, unreleased dubs and join a community that champions independent producers and top DJs.</p>
+      <a href="/register.html" class="button">Join the Movement</a>
     </section>
 
-    <!-- Producers & DJs Benefit Boxes -->
-    <section class="benefits-section">
-      <h2>How Producers & DJs Benefit</h2>
+    <!-- Features Section -->
+    <section class="features-section">
+      <h2>Why DubVault?</h2>
       <div class="benefits-container">
         <div class="benefit-box">
-          <h3>For Producers</h3>
-          <p>Get your music heard by top DJs and gain exposure in the underground scene.</p>
+          <h3>Artist-First</h3>
+          <p>Fair upfront payments and full ownership for producers.</p>
         </div>
         <div class="benefit-box">
-          <h3>For DJs</h3>
-          <p>Access exclusive, unreleased tracks to keep your sets fresh and unique.</p>
+          <h3>Exclusive Access</h3>
+          <p>Fans and DJs get access to 2 fresh, unreleased dubs every week.</p>
+        </div>
+        <div class="benefit-box">
+          <h3>Community Driven</h3>
+          <p>No algorithms—tracks rise by genuine community votes.</p>
         </div>
       </div>
     </section>
   </main>
+
+  <footer>
+    <p>&copy; 2025 DubVault. All rights reserved.</p>
+  </footer>
 </body>
 </html>

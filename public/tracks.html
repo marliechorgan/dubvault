@@ -1,20 +1,22 @@
-<!-- public/tracks.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Tracks - DubVault</title>
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
       <a href="/tracks" class="active">Tracks</a>
       <a href="/submit.html">Submit</a>
       <a href="/profile.html">My Profile</a>
+      <a href="/merchandise">Merch</a>
+      <a href="/licensing">Licensing</a>
+      <a href="/remix">Remix</a>
       <a href="/faq.html">FAQ</a>
       <a href="/login.html">Login</a>
     </nav>
@@ -33,45 +35,30 @@
     async function loadTracks() {
       try {
         const response = await fetch('/api/tracks');
-        if (!response.ok) {
-          throw new Error('Failed to fetch tracks');
-        }
+        if (!response.ok) throw new Error('Failed to fetch tracks');
         const tracks = await response.json();
-        console.log('Fetched tracks:', tracks);
-
         const trackListEl = document.querySelector('.track-list');
         trackListEl.innerHTML = '';
-
         tracks.forEach(track => {
           const li = document.createElement('li');
           li.className = 'track-item';
-          li.style.marginBottom = '1rem';
           li.innerHTML = `
-            <h3>${track.title}</h3>
-            <p><strong>Artist:</strong> ${track.artist}</p>
-            <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
-            <p><a href="/uploads/${track.filePath}" download>Download Track</a></p>
-            ${
-              track.artworkPath
-                ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" style="max-width:200px; margin-top:1rem;">`
-                : ''
-            }
-            ${
-              track.avgRating !== null
-                ? `<p><strong>Average Rating:</strong> ${track.avgRating}/10</p>`
-                : ''
-            }
+            <div class="track-details">
+              <h3>${track.title}</h3>
+              <p><strong>Artist:</strong> ${track.artist}</p>
+              <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
+              ${ track.avgRating !== null ? `<p><strong>Average Rating:</strong> ${track.avgRating}/10</p>` : '' }
+              <p><a href="/uploads/${track.filePath}" download class="button">Download Track</a></p>
+            </div>
+            ${ track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork">` : '' }
           `;
           trackListEl.appendChild(li);
         });
       } catch (err) {
         console.error('Error loading tracks:', err);
-        const trackListEl = document.querySelector('.track-list');
-        trackListEl.innerHTML = '<li>Error loading tracks. Please try again later.</li>';
+        document.querySelector('.track-list').innerHTML = '<li>Error loading tracks. Please try again later.</li>';
       }
     }
-
-    // Load tracks when the page loads
     window.onload = loadTracks;
   </script>
 </body>

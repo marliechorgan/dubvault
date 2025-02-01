@@ -1,5 +1,3 @@
-// index.js
-
 require('dotenv').config();
 
 const express = require('express');
@@ -27,7 +25,7 @@ app.use(compression());
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
 app.use('/api', apiLimiter);
@@ -56,7 +54,6 @@ const storage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    // Unique filename to prevent collisions
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + '-' + file.originalname);
   }
@@ -77,7 +74,7 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ========== STATIC ==========
+// ========== STATIC FILES ==========
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -104,7 +101,31 @@ function saveUsers(users) {
 function getTracks() {
   try {
     const data = fs.readFileSync('tracks.json', 'utf8');
-    return JSON.parse(data);
+    const tracks = JSON.parse(data);
+    // If no tracks exist, add sample tracks for demonstration
+    if (!tracks || tracks.length === 0) {
+      const sampleTracks = [
+        {
+          id: Date.now(),
+          title: "Sample Dub 1",
+          artist: "Underground Artist",
+          filePath: "sample1.mp3",
+          artworkPath: "sample_artwork1.jpg",
+          expiresOn: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString() // expires in 60 days
+        },
+        {
+          id: Date.now() + 1,
+          title: "Sample Dub 2",
+          artist: "Local Producer",
+          filePath: "sample2.mp3",
+          artworkPath: "sample_artwork2.jpg",
+          expiresOn: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      saveTracks(sampleTracks);
+      return sampleTracks;
+    }
+    return tracks;
   } catch (err) {
     console.error('Error reading tracks.json:', err);
     return [];
@@ -179,11 +200,8 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
     if (!fs.existsSync(beepPath)) {
       return reject(new Error('Watermark beep.mp3 not found.'));
     }
-
-    const randomOffset = Math.floor(Math.random() * 20) + 5; // between 5 and 25 seconds
-
+    const randomOffset = Math.floor(Math.random() * 20) + 5;
     console.log(`[Watermark] Embedding beep for user ${userId} at ${randomOffset}s`);
-
     ffmpeg(inputPath)
       .input(beepPath)
       .complexFilter([
@@ -221,12 +239,12 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
 
 // ========== ROUTES ==========
 
-// Home Page
+// Home Page (Updated to include business plan messaging)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// About Page
+// About Page (Updated)
 app.get('/about.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
@@ -277,17 +295,31 @@ app.get('/cancel.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
+// Additional Pages (Coming Soon or basic info)
+
+// Merchandise Page
+app.get('/merchandise', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'merchandise.html'));
+});
+
+// Licensing Marketplace Page
+app.get('/licensing', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'licensing.html'));
+});
+
+// Remix Contests Page
+app.get('/remix', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'remix.html'));
+});
+
 // ========== API ENDPOINTS ==========
 
-// Get All Tracks
+// Get All Tracks with ratings merged
 app.get('/api/tracks', (req, res) => {
   try {
     console.log("Fetching tracks from tracks.json...");
     const allTracks = getTracks();
-    console.log("All Tracks:", allTracks);
-
     const ratings = getRatings();
-    // Merge rating data
     const mergedTracks = allTracks.map(t => {
       const trackRatings = ratings.filter(r => r.trackId === String(t.id));
       let avgRating = null;
@@ -297,8 +329,6 @@ app.get('/api/tracks', (req, res) => {
       }
       return { ...t, avgRating };
     });
-    console.log("Merged track data:", mergedTracks);
-
     res.json(mergedTracks);
   } catch (err) {
     console.error("Error reading tracks.json:", err);
@@ -314,22 +344,17 @@ app.post('/submit', upload.fields([
   if (!req.session.userId) {
     return res.status(401).send(generateErrorPage('Unauthorized', 'Log in to submit.'));
   }
-
   const { title, artist } = req.body;
   const trackFile = req.files.trackFile ? req.files.trackFile[0] : null;
   const artworkFile = req.files.artwork ? req.files.artwork[0] : null;
-
   if (!trackFile) {
     return res.status(400).send(generateErrorPage('No Track File', 'Upload an audio file.'));
   }
-
-  // Calculate expiration date (2 months from now)
+  // Set expiration (2 months from now)
   const twoMonthsFromNow = new Date();
   twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
-
   const inputPath = path.join(__dirname, 'uploads', trackFile.filename);
   const watermarkedOutput = path.join(__dirname, 'uploads', `wm_${trackFile.filename}`);
-
   try {
     console.log(`[Submit] Watermarking track for user: ${req.session.userId}`);
     await applyUniqueWatermark(inputPath, watermarkedOutput, req.session.userId);
@@ -337,30 +362,23 @@ app.post('/submit', upload.fields([
     fs.renameSync(watermarkedOutput, inputPath);
   } catch (err) {
     console.error('[Watermark] Error:', err);
-    // If watermarking fails, keep original
-    // Optionally, inform the user
   }
-
   let localTracks = [];
   try {
     localTracks = getTracks();
   } catch (err) {
     console.warn('tracks.json not found or invalid; starting fresh...');
   }
-
   const newTrack = {
     id: Date.now(),
     title: title || 'Untitled',
     artist: artist || 'Unknown Artist',
-    filePath: trackFile.filename, // e.g., "1684438742500-RUSHME.mp3"
+    filePath: trackFile.filename,
     artworkPath: artworkFile ? artworkFile.filename : null,
     expiresOn: twoMonthsFromNow.toISOString()
   };
-
   localTracks.push(newTrack);
   saveTracks(localTracks);
-  console.log('[Submit] New track saved to tracks.json:', newTrack);
-
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -400,21 +418,17 @@ app.post('/submit', upload.fields([
 
 // ========== AUTHENTICATION ENDPOINTS ==========
 
-// Register a New User
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
-
   if (users.some(u => u.username === username)) {
     return res.status(400).json({ error: 'Username already taken' });
   }
-
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = { id: Date.now(), username, password: hashedPassword, isPaid: false };
     users.push(newUser);
     saveUsers(users);
-
     req.session.userId = newUser.id;
     res.json({ success: true, redirect: '/profile.html' });
   } catch (err) {
@@ -423,22 +437,18 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login User
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
   const user = users.find(u => u.username === username);
-
   if (!user) {
     return res.status(400).json({ error: 'Invalid username or password' });
   }
-
   try {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(400).json({ error: 'Invalid username or password' });
     }
-
     req.session.userId = user.id;
     res.json({ success: true, redirect: '/profile.html' });
   } catch (err) {
@@ -447,7 +457,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Logout User
 app.post('/api/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
@@ -458,34 +467,28 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-// Get Current User Info
 app.get('/api/me', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in' });
   }
-
   const users = getUsers();
   const user = users.find(u => u.id === req.session.userId);
-
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }
-
   res.json({ username: user.username, isPaid: user.isPaid });
 });
 
-// Ratings
+// Ratings Endpoint
 app.post('/api/rate', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Must be logged in to rate' });
   }
-
   const { trackId, rating } = req.body;
   const numRating = parseInt(rating, 10);
   if (!trackId || isNaN(numRating) || numRating < 1 || numRating > 10) {
     return res.status(400).json({ error: 'Invalid rating or trackId' });
   }
-
   let ratings = getRatings();
   const existing = ratings.find(r => r.trackId === String(trackId) && r.userId === req.session.userId);
   if (existing) {
@@ -571,7 +574,7 @@ app.get('/payment-success', async (req, res) => {
   }
 });
 
-// Optional PayPal
+// Optional PayPal (Not implemented)
 app.post('/api/checkout/paypal', async (req, res) => {
   return res.json({ error: 'PayPal not used. Stripe is primary now.' });
 });
