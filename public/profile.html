@@ -22,9 +22,10 @@
 
   <main class="content-container fade-in">
     <h1>My Profile</h1>
-    <!-- Spinner element shown while loading -->
-    <div id="spinner" class="spinner"></div>
-    <p id="membership-status" style="display:none;"></p>
+    <div id="profileContent">
+      <div id="spinner" class="spinner"></div>
+      <p id="membership-status" style="display:none;"></p>
+    </div>
     <button id="logoutButton" class="button">Logout</button>
   </main>
 
@@ -38,7 +39,7 @@
         const response = await fetch('/api/me');
         const spinner = document.getElementById('spinner');
         const statusEl = document.getElementById('membership-status');
-        spinner.style.display = 'none'; // Hide spinner once we have a response
+        spinner.style.display = 'none';
         if (!response.ok) {
           if (response.status === 401) {
             statusEl.style.display = 'block';
@@ -51,6 +52,44 @@
         statusEl.style.display = 'block';
         statusEl.innerHTML = `<strong>Welcome, ${data.username}!</strong><br>` +
           (data.isPaid ? "You have an active subscription." : "You do not have a paid subscription.");
+        if (data.isPaid) {
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'button';
+          cancelBtn.textContent = 'Cancel Subscription';
+          cancelBtn.onclick = async function() {
+            if (confirm("Are you sure you want to cancel your subscription?")) {
+              try {
+                const response = await fetch('/api/cancel-subscription', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                  alert('Subscription canceled successfully.');
+                  window.location.reload();
+                } else {
+                  alert('Cancellation failed.');
+                }
+              } catch (err) {
+                console.error(err);
+                alert('Error cancelling subscription.');
+              }
+            }
+          };
+          statusEl.appendChild(document.createElement('br'));
+          statusEl.appendChild(cancelBtn);
+        } else {
+          const subscribeForm = document.createElement('form');
+          subscribeForm.method = 'POST';
+          subscribeForm.action = '/create-checkout-session';
+          const subscribeButton = document.createElement('button');
+          subscribeButton.type = 'submit';
+          subscribeButton.className = 'button';
+          subscribeButton.textContent = 'Subscribe Now';
+          subscribeForm.appendChild(subscribeButton);
+          statusEl.appendChild(document.createElement('br'));
+          statusEl.appendChild(subscribeForm);
+        }
       } catch (err) {
         console.error('Error fetching profile:', err);
         const statusEl = document.getElementById('membership-status');
@@ -77,7 +116,6 @@
       }
     });
 
-    // Call fetchProfile as soon as the page loads
     window.onload = fetchProfile;
   </script>
 </body>
