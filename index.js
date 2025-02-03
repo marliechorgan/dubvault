@@ -18,15 +18,18 @@ const compression = require('compression');
 
 const app = express();
 
-// --- Trust the reverse proxy (needed on Render) ---
+// Log the current environment for debugging
+console.log("NODE_ENV:", process.env.NODE_ENV);
+
+// --- Trust proxy (required by Render) ---
 app.set('trust proxy', 1);
 
-// --- SECURITY MIDDLEWARE ---
+// ========== SECURITY MIDDLEWARE ==========
 app.use(helmet());
 app.use(cors());
 app.use(compression());
 
-// --- RATE LIMITING ---
+// ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -34,7 +37,7 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// --- STRIPE & PAYPAL SETUP ---
+// ========== STRIPE & PAYPAL SETUP ==========
 const stripeInstance = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 const Environment = process.env.NODE_ENV === 'production'
   ? paypal.core.LiveEnvironment
@@ -46,7 +49,7 @@ const paypalClient = new paypal.core.PayPalHttpClient(
   )
 );
 
-// --- MULTER (FILE UPLOAD) ---
+// ========== MULTER (FILE UPLOAD) ==========
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, file.fieldname === 'artwork' ? 'artworks/' : 'uploads/');
@@ -58,29 +61,28 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// --- SESSION SETUP ---
-// For debugging, we force secure: false so that Safari accepts cookies.
+// ========== SESSION ==========
 app.use(session({
   secret: process.env.SESSION_SECRET || 'some_secret_key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false,  // Set to false for debugging; in production, use secure: true with HTTPS.
-    sameSite: 'lax'
-    // Do not set domain here for now.
+    secure: process.env.NODE_ENV === 'production' ? true : false, // true in production, false in development
+    sameSite: 'lax',
+    // Force cookie domain in production
+    domain: process.env.NODE_ENV === 'production' ? '.dubvault.co.uk' : undefined,
   }
 }));
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// --- STATIC FILES ---
+// ========== STATIC FILES ==========
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- HELPER FUNCTIONS ---
+// ========== HELPER FUNCTIONS ==========
 function getUsers() {
   try {
     const data = fs.readFileSync('users.json', 'utf8');
@@ -193,7 +195,7 @@ function generateErrorPage(title, message) {
   `;
 }
 
-// --- ADVANCED WATERMARK FUNCTION ---
+// ========== ADVANCED WATERMARK ==========
 async function applyUniqueWatermark(inputPath, outputPath, userId) {
   return new Promise((resolve, reject) => {
     const beepPath = path.join(__dirname, 'watermarks', 'beep.mp3');
@@ -285,7 +287,7 @@ app.post('/api/cancel-subscription', (req, res) => {
   return res.json({ success: true });
 });
 
-// --- GET ALL TRACKS ENDPOINT ---
+// --- GET ALL TRACKS (with ratings merged) ---
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -306,7 +308,7 @@ app.get('/api/tracks', (req, res) => {
   }
 });
 
-// --- SUBMIT TRACK ENDPOINT ---
+// --- SUBMIT TRACK ENDPOINT (protected) ---
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
