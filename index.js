@@ -18,6 +18,9 @@ const compression = require('compression');
 
 const app = express();
 
+// IMPORTANT: If you are behind a reverse proxy (e.g. Render, Heroku), set trust proxy
+app.set('trust proxy', 1);
+
 // ========== SECURITY MIDDLEWARE ==========
 app.use(helmet());
 app.use(cors());
@@ -66,9 +69,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    // For local testing, secure must be false; in production with HTTPS, set secure to true.
-    secure: process.env.NODE_ENV === 'production' ? true : false,
-    sameSite: 'lax'
+    secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
+    sameSite: 'lax',
+    // Optionally, if needed:
+    // domain: '.dubvault.co.uk'
   }
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -223,7 +227,7 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
 
 // ========== ROUTES ==========
 
-// Serve HTML pages
+// Serve static HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -286,7 +290,7 @@ app.post('/api/cancel-subscription', (req, res) => {
 
 // ========== API ENDPOINTS ==========
 
-// Get all tracks (with ratings merged)
+// Get all tracks (merging ratings)
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -460,7 +464,7 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency: 'gbp',
             product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 2000, // £20
+            unit_amount: 2000,
             recurring: { interval: 'month' }
           },
           quantity: 1,
