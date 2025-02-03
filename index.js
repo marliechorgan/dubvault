@@ -18,7 +18,7 @@ const compression = require('compression');
 
 const app = express();
 
-// IMPORTANT: If you are behind a reverse proxy (e.g. Render, Heroku), set trust proxy
+// --- Trust proxy if behind a reverse proxy (e.g., Render, Heroku) ---
 app.set('trust proxy', 1);
 
 // ========== SECURITY MIDDLEWARE ==========
@@ -28,7 +28,7 @@ app.use(compression());
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
@@ -69,10 +69,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
+    secure: process.env.NODE_ENV === 'production', // Must be true if using HTTPS in production
     sameSite: 'lax',
-    // Optionally, if needed:
-    // domain: '.dubvault.co.uk'
+    // In production, explicitly set the cookie domain so that it is valid for your domain
+    domain: process.env.NODE_ENV === 'production' ? '.dubvault.co.uk' : undefined,
   }
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -227,7 +227,7 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
 
 // ========== ROUTES ==========
 
-// Serve static HTML pages
+// Serve HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -290,7 +290,7 @@ app.post('/api/cancel-subscription', (req, res) => {
 
 // ========== API ENDPOINTS ==========
 
-// Get all tracks (merging ratings)
+// Get all tracks (with ratings merged)
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -413,8 +413,15 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid username or password' });
     }
     req.session.userId = user.id;
-    console.log("[/api/login] Login successful for:", username);
-    res.json({ success: true, redirect: '/profile.html' });
+    // Force saving the session
+    req.session.save((err) => {
+      if (err) {
+        console.error("[/api/login] Error saving session:", err);
+        return res.status(500).json({ error: 'Session save error' });
+      }
+      console.log("[/api/login] Login successful for:", username);
+      res.json({ success: true, redirect: '/profile.html' });
+    });
   } catch (err) {
     console.error('Error during user login:', err);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -464,7 +471,7 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency: 'gbp',
             product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 2000,
+            unit_amount: 2000, // £20
             recurring: { interval: 'month' }
           },
           quantity: 1,
