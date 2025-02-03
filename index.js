@@ -66,7 +66,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' ? true : false, // use false for local testing
+    // For local testing, secure must be false; in production with HTTPS, set secure to true.
+    secure: process.env.NODE_ENV === 'production' ? true : false,
     sameSite: 'lax'
   }
 }));
@@ -260,6 +261,12 @@ app.get('/cancel.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
+// ========== NEW ENDPOINT: Debug Session ==========
+app.get('/api/session', (req, res) => {
+  console.log("[/api/session] Session data:", req.session);
+  res.json(req.session);
+});
+
 // ========== NEW ENDPOINT: Cancel Subscription ==========
 app.post('/api/cancel-subscription', (req, res) => {
   console.log("[/api/cancel-subscription] Called. Session userId:", req.session.userId);
@@ -271,7 +278,6 @@ app.post('/api/cancel-subscription', (req, res) => {
   if (userIndex === -1) {
     return res.status(404).json({ error: 'User not found' });
   }
-  // Set isPaid to false to simulate cancellation
   users[userIndex].isPaid = false;
   saveUsers(users);
   console.log("[/api/cancel-subscription] Subscription canceled for user:", req.session.userId);
@@ -280,7 +286,7 @@ app.post('/api/cancel-subscription', (req, res) => {
 
 // ========== API ENDPOINTS ==========
 
-// Get all tracks (merging ratings, etc.)
+// Get all tracks (with ratings merged)
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -423,7 +429,7 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-// /api/me endpoint to return the logged-in user's data
+// /api/me endpoint to return logged-in user's data
 app.get('/api/me', (req, res) => {
   console.log("[/api/me] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
