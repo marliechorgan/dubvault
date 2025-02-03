@@ -35,7 +35,7 @@
       <!-- Membership status will be inserted here -->
       <p id="membership-status" style="display:none;"></p>
     </div>
-    <button id="logoutButton" class="button">Logout</button>
+    <button id="logoutButton" class="button" style="display:none;">Logout</button>
   </main>
 
   <footer>
@@ -43,43 +43,39 @@
   </footer>
 
   <script>
-    // Use a DOMContentLoaded listener to ensure elements are ready
     document.addEventListener("DOMContentLoaded", async function() {
       const spinner = document.getElementById('spinner');
       const statusEl = document.getElementById('membership-status');
       const logoutBtn = document.getElementById('logoutButton');
 
-      // Log a message to help with debugging
-      console.log("Fetching profile data...");
-
+      console.log("Fetching profile data from /api/me...");
       try {
         const response = await fetch('/api/me');
-        spinner.style.display = 'none'; // Hide spinner immediately on response
-
+        spinner.style.display = 'none';
+        console.log("Response status from /api/me:", response.status);
         if (!response.ok) {
           if (response.status === 401) {
             statusEl.style.display = 'block';
             statusEl.textContent = "You are not logged in.";
-            console.log("User not logged in (401).");
+            console.log("User is not logged in (401).");
             return;
           }
           throw new Error("Network response was not ok");
         }
-
         const data = await response.json();
         console.log("Received profile data:", data);
-
-        // Display the membership status
         statusEl.style.display = 'block';
         statusEl.innerHTML = `<strong>Welcome, ${data.username}!</strong><br>` +
           (data.isPaid ? "You have an active subscription." : "You do not have a paid subscription.");
+        // Only show logout button if logged in
+        logoutBtn.style.display = 'inline-block';
 
         // Add interactive controls based on subscription status
         if (data.isPaid) {
           const cancelBtn = document.createElement('button');
           cancelBtn.className = 'button';
           cancelBtn.textContent = 'Cancel Subscription';
-          cancelBtn.onclick = async function() {
+          cancelBtn.addEventListener('click', async function() {
             if (confirm("Are you sure you want to cancel your subscription?")) {
               try {
                 const cancelResponse = await fetch('/api/cancel-subscription', {
@@ -87,7 +83,7 @@
                   headers: { 'Content-Type': 'application/json' }
                 });
                 const result = await cancelResponse.json();
-                console.log("Cancel response:", result);
+                console.log("Cancel subscription response:", result);
                 if (result.success) {
                   alert('Subscription canceled successfully.');
                   window.location.reload();
@@ -95,15 +91,15 @@
                   alert('Cancellation failed.');
                 }
               } catch (err) {
-                console.error('Error canceling subscription:', err);
+                console.error("Error canceling subscription:", err);
                 alert('Error canceling subscription.');
               }
             }
-          };
+          });
           statusEl.appendChild(document.createElement('br'));
           statusEl.appendChild(cancelBtn);
         } else {
-          // Create a subscription form
+          // If not paid, add a subscribe form
           const subscribeForm = document.createElement('form');
           subscribeForm.method = 'POST';
           subscribeForm.action = '/create-checkout-session';
@@ -119,20 +115,20 @@
         spinner.style.display = 'none';
         statusEl.style.display = 'block';
         statusEl.textContent = "Error loading profile.";
-        console.error("Error in fetch /api/me:", err);
+        console.error("Error fetching /api/me:", err);
       }
 
       // Attach logout functionality
       logoutBtn.addEventListener('click', async function() {
         try {
-          const response = await fetch('/api/logout', {
+          const logoutResponse = await fetch('/api/logout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
-          const data = await response.json();
-          console.log("Logout response:", data);
-          if (data.success) {
-            window.location.href = data.redirect;
+          const logoutData = await logoutResponse.json();
+          console.log("Logout response:", logoutData);
+          if (logoutData.success) {
+            window.location.href = logoutData.redirect;
           } else {
             alert('Logout failed.');
           }

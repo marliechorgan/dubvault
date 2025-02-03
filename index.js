@@ -25,7 +25,7 @@ app.use(compression());
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
@@ -66,7 +66,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: (process.env.NODE_ENV === 'production'),
+    secure: process.env.NODE_ENV === 'production' ? true : false, // use false for local testing
     sameSite: 'lax'
   }
 }));
@@ -205,7 +205,7 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
       .complexFilter([
         { filter: 'adelay', options: `${randomOffset * 1000}|${randomOffset * 1000}`, inputs: '1:a', outputs: 'delayedBeep' },
         { filter: 'volume', options: '0.2', inputs: 'delayedBeep', outputs: 'quietBeep' },
-        { filter: 'amix', options: 'inputs=2:duration=longest:dropout_transition=3', inputs: ['0:a','quietBeep'], outputs: 'mixed' }
+        { filter: 'amix', options: 'inputs=2:duration=longest:dropout_transition=3', inputs: ['0:a', 'quietBeep'], outputs: 'mixed' }
       ], 'mixed')
       .outputOptions(['-map 0:v?', '-map "[mixed]"'])
       .on('end', () => {
@@ -222,6 +222,7 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
 
 // ========== ROUTES ==========
 
+// Serve HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -261,6 +262,7 @@ app.get('/cancel.html', (req, res) => {
 
 // ========== NEW ENDPOINT: Cancel Subscription ==========
 app.post('/api/cancel-subscription', (req, res) => {
+  console.log("[/api/cancel-subscription] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in' });
   }
@@ -269,13 +271,16 @@ app.post('/api/cancel-subscription', (req, res) => {
   if (userIndex === -1) {
     return res.status(404).json({ error: 'User not found' });
   }
-  // Simulate cancellation by setting isPaid to false
+  // Set isPaid to false to simulate cancellation
   users[userIndex].isPaid = false;
   saveUsers(users);
+  console.log("[/api/cancel-subscription] Subscription canceled for user:", req.session.userId);
   return res.json({ success: true });
 });
 
 // ========== API ENDPOINTS ==========
+
+// Get all tracks (merging ratings, etc.)
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -296,6 +301,7 @@ app.get('/api/tracks', (req, res) => {
   }
 });
 
+// Submit a new track (protected)
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
@@ -357,10 +363,13 @@ app.post('/submit', upload.fields([
   `);
 });
 
+// Register endpoint
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
-  const users = getUsers();
+  console.log("[/api/register] Attempting registration for:", username);
+  let users = getUsers();
   if (users.some(u => u.username === username)) {
+    console.log("[/api/register] Username already taken:", username);
     return res.status(400).json({ error: 'Username already taken' });
   }
   try {
@@ -369,6 +378,7 @@ app.post('/api/register', async (req, res) => {
     users.push(newUser);
     saveUsers(users);
     req.session.userId = newUser.id;
+    console.log("[/api/register] Registration successful for:", username);
     res.json({ success: true, redirect: '/profile.html' });
   } catch (err) {
     console.error('Error during registration:', err);
@@ -376,19 +386,24 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log("[/api/login] Login attempt for:", username);
   const users = getUsers();
   const user = users.find(u => u.username === username);
   if (!user) {
+    console.log("[/api/login] User not found:", username);
     return res.status(400).json({ error: 'Invalid username or password' });
   }
   try {
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      console.log("[/api/login] Password mismatch for:", username);
       return res.status(400).json({ error: 'Invalid username or password' });
     }
     req.session.userId = user.id;
+    console.log("[/api/login] Login successful for:", username);
     res.json({ success: true, redirect: '/profile.html' });
   } catch (err) {
     console.error('Error during user login:', err);
@@ -396,7 +411,9 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Logout endpoint
 app.post('/api/logout', (req, res) => {
+  console.log("[/api/logout] Logging out user:", req.session.userId);
   req.session.destroy(err => {
     if (err) {
       console.error('Error during logout:', err);
@@ -406,19 +423,24 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
+// /api/me endpoint to return the logged-in user's data
 app.get('/api/me', (req, res) => {
+  console.log("[/api/me] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
+    console.log("[/api/me] No user is logged in.");
     return res.status(401).json({ error: 'Not logged in' });
   }
   const users = getUsers();
   const user = users.find(u => u.id === req.session.userId);
   if (!user) {
+    console.log("[/api/me] User not found for session:", req.session.userId);
     return res.status(404).json({ error: 'User not found' });
   }
+  console.log("[/api/me] Returning user:", user);
   res.json({ username: user.username, isPaid: user.isPaid });
 });
 
-// Stripe Checkout & Portal Endpoints (unchanged)
+// Stripe Checkout endpoint
 app.post('/create-checkout-session', async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send('You must be logged in first.');
@@ -432,7 +454,7 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency: 'gbp',
             product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 2000,
+            unit_amount: 2000, // £20
             recurring: { interval: 'month' }
           },
           quantity: 1,
@@ -448,6 +470,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
+// Stripe Portal Session endpoint
 app.post('/create-portal-session', async (req, res) => {
   const { session_id } = req.body;
   if (!session_id) return res.status(400).send('Missing session_id');
@@ -464,6 +487,7 @@ app.post('/create-portal-session', async (req, res) => {
   }
 });
 
+// Payment success endpoint
 app.get('/payment-success', async (req, res) => {
   const sessionId = req.query.session_id;
   if (!sessionId || !req.session.userId) {
@@ -486,6 +510,7 @@ app.get('/payment-success', async (req, res) => {
   }
 });
 
+// Optional PayPal endpoint
 app.post('/api/checkout/paypal', async (req, res) => {
   return res.json({ error: 'PayPal not used. Stripe is primary now.' });
 });
@@ -495,6 +520,6 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// Start Server
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DubVault running on port ${PORT}`));

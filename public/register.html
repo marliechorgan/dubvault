@@ -41,30 +41,27 @@
   </footer>
 
   <script>
-    const registerForm = document.getElementById('registerForm');
-
-    registerForm.addEventListener('submit', async (e) => {
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-
       const username = e.target.username.value.trim();
       const password = e.target.password.value.trim();
-
+      console.log("Attempting registration for:", username);
       try {
         const response = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-
         const data = await response.json();
-
+        console.log("Registration response:", data);
         if (data.success) {
+          alert("Registration successful!");
           window.location.href = data.redirect;
         } else {
           alert(data.error || 'Registration failed.');
         }
       } catch (err) {
-        console.error('Error during registration:', err);
+        console.error("Error during registration:", err);
         alert('An error occurred. Please try again.');
       }
     });
