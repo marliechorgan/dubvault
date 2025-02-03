@@ -18,15 +18,15 @@ const compression = require('compression');
 
 const app = express();
 
-// --- Trust proxy so that forwarded headers are used (required by Render) ---
+// --- Trust the reverse proxy (needed on Render) ---
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE ==========
+// --- SECURITY MIDDLEWARE ---
 app.use(helmet());
 app.use(cors());
 app.use(compression());
 
-// ========== RATE LIMITING ==========
+// --- RATE LIMITING ---
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -34,7 +34,7 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// ========== STRIPE & PAYPAL SETUP ==========
+// --- STRIPE & PAYPAL SETUP ---
 const stripeInstance = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 const Environment = process.env.NODE_ENV === 'production'
   ? paypal.core.LiveEnvironment
@@ -46,14 +46,10 @@ const paypalClient = new paypal.core.PayPalHttpClient(
   )
 );
 
-// ========== MULTER (FILE UPLOAD) ==========
+// --- MULTER (FILE UPLOAD) ---
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (file.fieldname === 'artwork') {
-      cb(null, 'artworks/');
-    } else {
-      cb(null, 'uploads/');
-    }
+    cb(null, file.fieldname === 'artwork' ? 'artworks/' : 'uploads/');
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -62,28 +58,29 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ========== SESSION ==========
+// --- SESSION SETUP ---
+// For debugging, we force secure: false so that Safari accepts cookies.
 app.use(session({
   secret: process.env.SESSION_SECRET || 'some_secret_key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Should be true in production (HTTPS)
-    sameSite: 'lax',
-    // Set the domain so that cookies are sent correctly by browsers like Safari
-    domain: process.env.NODE_ENV === 'production' ? '.dubvault.co.uk' : undefined,
+    secure: false,  // Set to false for debugging; in production, use secure: true with HTTPS.
+    sameSite: 'lax'
+    // Do not set domain here for now.
   }
 }));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ========== STATIC FILES ==========
+// --- STATIC FILES ---
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ========== HELPER FUNCTIONS ==========
+// --- HELPER FUNCTIONS ---
 function getUsers() {
   try {
     const data = fs.readFileSync('users.json', 'utf8');
@@ -196,7 +193,7 @@ function generateErrorPage(title, message) {
   `;
 }
 
-// ========== ADVANCED WATERMARK ==========
+// --- ADVANCED WATERMARK FUNCTION ---
 async function applyUniqueWatermark(inputPath, outputPath, userId) {
   return new Promise((resolve, reject) => {
     const beepPath = path.join(__dirname, 'watermarks', 'beep.mp3');
@@ -265,13 +262,13 @@ app.get('/cancel.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
-// ========== NEW ENDPOINT: Debug Session ==========
-app.get('/api/session', (req, res) => {
-  console.log("[/api/session] Session data:", req.session);
+// --- DEBUG ENDPOINT: Return Entire Session ---
+app.get('/api/debug', (req, res) => {
+  console.log("[/api/debug] Session data:", req.session);
   res.json(req.session);
 });
 
-// ========== NEW ENDPOINT: Cancel Subscription ==========
+// --- CANCEL SUBSCRIPTION ENDPOINT ---
 app.post('/api/cancel-subscription', (req, res) => {
   console.log("[/api/cancel-subscription] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
@@ -288,9 +285,7 @@ app.post('/api/cancel-subscription', (req, res) => {
   return res.json({ success: true });
 });
 
-// ========== API ENDPOINTS ==========
-
-// Get all tracks (merging ratings)
+// --- GET ALL TRACKS ENDPOINT ---
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -311,7 +306,7 @@ app.get('/api/tracks', (req, res) => {
   }
 });
 
-// Submit a new track (protected)
+// --- SUBMIT TRACK ENDPOINT ---
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
@@ -373,7 +368,7 @@ app.post('/submit', upload.fields([
   `);
 });
 
-// Register endpoint
+// --- REGISTER ENDPOINT ---
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   console.log("[/api/register] Attempting registration for:", username);
@@ -402,7 +397,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login endpoint
+// --- LOGIN ENDPOINT ---
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   console.log("[/api/login] Login attempt for:", username);
@@ -433,7 +428,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Logout endpoint
+// --- LOGOUT ENDPOINT ---
 app.post('/api/logout', (req, res) => {
   console.log("[/api/logout] Logging out user:", req.session.userId);
   req.session.destroy(err => {
@@ -445,7 +440,7 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-// /api/me endpoint to return logged-in user's data
+// --- /api/me ENDPOINT ---
 app.get('/api/me', (req, res) => {
   console.log("[/api/me] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
@@ -462,7 +457,7 @@ app.get('/api/me', (req, res) => {
   res.json({ username: user.username, isPaid: user.isPaid });
 });
 
-// Stripe Checkout endpoint
+// --- STRIPE CHECKOUT ENDPOINT ---
 app.post('/create-checkout-session', async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send('You must be logged in first.');
@@ -492,7 +487,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Stripe Portal Session endpoint
+// --- STRIPE PORTAL SESSION ENDPOINT ---
 app.post('/create-portal-session', async (req, res) => {
   const { session_id } = req.body;
   if (!session_id) return res.status(400).send('Missing session_id');
@@ -509,7 +504,7 @@ app.post('/create-portal-session', async (req, res) => {
   }
 });
 
-// Payment success endpoint
+// --- PAYMENT SUCCESS ENDPOINT ---
 app.get('/payment-success', async (req, res) => {
   const sessionId = req.query.session_id;
   if (!sessionId || !req.session.userId) {
@@ -532,16 +527,16 @@ app.get('/payment-success', async (req, res) => {
   }
 });
 
-// Optional PayPal endpoint
+// --- OPTIONAL PAYPAL ENDPOINT ---
 app.post('/api/checkout/paypal', async (req, res) => {
   return res.json({ error: 'PayPal not used. Stripe is primary now.' });
 });
 
-// 404 Handler
+// --- 404 HANDLER ---
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// Start the server
+// --- START THE SERVER ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DubVault running on port ${PORT}`));
