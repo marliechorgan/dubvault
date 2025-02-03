@@ -18,7 +18,7 @@ const compression = require('compression');
 
 const app = express();
 
-// IMPORTANT: Trust the proxy (required by Render, Heroku, etc.)
+// --- Trust proxy so that forwarded headers are used (required by Render) ---
 app.set('trust proxy', 1);
 
 // ========== SECURITY MIDDLEWARE ==========
@@ -69,11 +69,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    // For debugging on Render using Safari, force secure to false temporarily.
-    secure: false, // Change to true in production with HTTPS
-    sameSite: 'lax'
-    // Optionally, you can set domain if needed:
-    // domain: process.env.NODE_ENV === 'production' ? '.dubvault.co.uk' : undefined
+    secure: process.env.NODE_ENV === 'production', // Should be true in production (HTTPS)
+    sameSite: 'lax',
+    // Set the domain so that cookies are sent correctly by browsers like Safari
+    domain: process.env.NODE_ENV === 'production' ? '.dubvault.co.uk' : undefined,
   }
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -389,7 +388,6 @@ app.post('/api/register', async (req, res) => {
     users.push(newUser);
     saveUsers(users);
     req.session.userId = newUser.id;
-    // Force session save before responding
     req.session.save(err => {
       if (err) {
         console.error("[/api/register] Session save error:", err);
