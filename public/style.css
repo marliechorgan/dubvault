@@ -13,71 +13,68 @@ body {
   line-height: 1.6;
 }
 
-/* Container */
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 /* Header */
-.site-header {
+.header {
   background: #111;
-  padding: 1rem 0;
+  padding: 1rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
-.site-header .container {
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
 }
 .logo {
-  max-height: 80px;
+  height: 80px;
 }
-.site-nav ul {
-  list-style: none;
+.nav {
   display: flex;
   gap: 1rem;
 }
-.site-nav a {
+.nav a {
   color: #e0e0e0;
   text-decoration: none;
   padding: 0.5rem 1rem;
   transition: background 0.3s, color 0.3s;
 }
-.site-nav a:hover,
-.site-nav a.active {
+.nav a.active, .nav a:hover {
   background: #e0e0e0;
   color: #111;
   border-radius: 4px;
 }
 
-/* Main Content */
-.main-content {
-  padding: 2rem 0;
+/* Main Content Container */
+.content-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
 
 /* Hero Section */
 .hero {
   background: linear-gradient(135deg, #1e1e1e, #333);
-  color: #fff;
-  padding: 4rem 1rem;
-  text-align: center;
+  padding: 4rem 2rem;
   border-radius: 8px;
-  margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 .hero::after {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-}
-.hero-content {
-  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.3);
   z-index: 1;
+}
+.hero .hero-content {
+  position: relative;
+  z-index: 2;
 }
 .hero h1 {
   font-size: 2.5rem;
@@ -94,63 +91,57 @@ body {
 
 /* Subscription Tiers */
 .subscription-tiers {
-  padding: 2rem 0;
   text-align: center;
   margin-bottom: 2rem;
 }
 .subscription-tiers h2 {
-  margin-bottom: 1.5rem;
   font-size: 2rem;
+  margin-bottom: 1.5rem;
 }
 .tiers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
 }
-.tier-card {
+.benefit-box {
   background: #222;
-  border-radius: 8px;
   padding: 1.5rem;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   transition: transform 0.3s;
 }
-.tier-card:hover {
+.benefit-box:hover {
   transform: translateY(-5px);
 }
-.tier-card h3 {
+.benefit-box h3 {
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
 }
-.tier-card .price {
+.benefit-box p {
   font-size: 1.2rem;
   margin-bottom: 1rem;
 }
-.tier-card ul {
+.benefit-box ul {
   list-style: none;
   margin-bottom: 1rem;
+  text-align: left;
 }
-.tier-card ul li {
+.benefit-box ul li {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
-.tier-card a.button {
+.benefit-box a.button {
   font-size: 1rem;
   padding: 0.5rem 1rem;
-}
-
-/* Premium Tier Specific */
-.tier-card.premium {
-  background: #333;
-  border: 2px solid #ffd700;
 }
 
 /* Artist Benefits */
 .artist-benefits {
   background: #222;
-  padding: 2rem 1rem;
+  padding: 2rem;
   border-radius: 8px;
-  margin-bottom: 2rem;
   text-align: center;
+  margin-bottom: 2rem;
 }
 .artist-benefits h2 {
   font-size: 2rem;
@@ -167,9 +158,9 @@ body {
 
 /* Community Features */
 .community-features {
-  padding: 2rem 1rem;
   text-align: center;
   margin-bottom: 2rem;
+  padding: 2rem;
 }
 .community-features h2 {
   font-size: 2rem;
@@ -184,7 +175,7 @@ body {
   padding: 0.75rem 1.5rem;
 }
 
-/* Button */
+/* Button Styling */
 .button {
   background: #e0e0e0;
   color: #111;
@@ -201,9 +192,9 @@ body {
 }
 
 /* Footer */
-.site-footer {
+footer {
   background: #111;
-  padding: 1rem 0;
+  padding: 1rem;
   text-align: center;
   color: #aaa;
   margin-top: 2rem;
@@ -229,16 +220,14 @@ body {
   transform: translateY(0);
 }
 
-/* Responsive */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .site-header .container {
+  .header-container {
     flex-direction: column;
-    align-items: center;
   }
-  .site-nav ul {
+  .nav {
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
   }
   .hero h1 {
     font-size: 2rem;

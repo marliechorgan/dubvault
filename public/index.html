@@ -7,24 +7,22 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="site-header fade-in">
-    <div class="container">
+  <header class="header fade-in">
+    <div class="header-container">
       <img src="/logo.jpg" alt="DubVault Logo" class="logo">
-      <nav class="site-nav">
-        <ul>
-          <li><a href="/" class="active">Home</a></li>
-          <li><a href="/about.html">About</a></li>
-          <li><a href="/tracks">Tracks</a></li>
-          <li><a href="/submit.html">Submit</a></li>
-          <li><a href="/profile.html">My Profile</a></li>
-          <li><a href="/faq.html">FAQ</a></li>
-          <li><a href="/login.html">Login</a></li>
-        </ul>
+      <nav class="nav">
+        <a href="/" class="active">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/tracks">Tracks</a>
+        <a href="/submit.html">Submit</a>
+        <a href="/profile.html">My Profile</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/login.html">Login</a>
       </nav>
     </div>
   </header>
 
-  <main class="main-content container fade-in">
+  <main class="content-container fade-in">
     <!-- Hero Section -->
     <section class="hero scroll-anim">
       <div class="hero-content">
@@ -38,9 +36,9 @@
     <section class="subscription-tiers scroll-anim">
       <h2>Your Subscription, Your Sound</h2>
       <div class="tiers-grid">
-        <div class="tier-card">
+        <div class="benefit-box">
           <h3>Basic Tier</h3>
-          <p class="price">£10/month or £100/year</p>
+          <p>£10/month or £100/year</p>
           <ul>
             <li>3 weekly exclusive tracks</li>
             <li>Vote on what bangs</li>
@@ -49,9 +47,9 @@
           </ul>
           <a href="/checkout.html" class="button">Get Basic</a>
         </div>
-        <div class="tier-card premium">
+        <div class="benefit-box">
           <h3>Premium Tier</h3>
-          <p class="price">£15/month or £150/year</p>
+          <p>£15/month or £150/year</p>
           <ul>
             <li>All Basic perks</li>
             <li>48-hour early drops</li>
@@ -78,14 +76,12 @@
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2025 DubVault. All rights reserved.</p>
-    </div>
+  <footer>
+    <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
-    // Simple scroll animation trigger
+    // Scroll animation trigger (preserves your original functionality)
     document.addEventListener('scroll', () => {
       const elements = document.querySelectorAll('.scroll-anim');
       elements.forEach(el => {
