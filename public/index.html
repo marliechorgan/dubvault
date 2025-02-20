@@ -2,41 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - DubVault</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="header fade-in">
-    <div class="header-container">
-      <img src="/logo.jpg" alt="DubVault Logo" class="logo">
-      <nav class="nav">
-        <a href="/" class="active">Home</a>
-        <a href="/about.html">About</a>
-        <a href="/tracks">Tracks</a>
-        <a href="/submit.html">Submit</a>
-        <a href="/profile.html">My Profile</a>
-        <a href="/faq.html">FAQ</a>
-        <a href="/login.html">Login</a>
-      </nav>
-    </div>
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
+    <nav class="nav">
+      <a href="/" class="nav-item slide-in-right active">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/tracks" class="nav-item slide-in-right">Tracks</a>
+      <a href="/submit.html" class="nav-item slide-in-right">Submit</a>
+      <a href="/profile.html" class="nav-item slide-in-right">My Profile</a>
+      <a href="/faq.html" class="nav-item slide-in-right">FAQ</a>
+      <a href="/login.html" class="nav-item slide-in-right">Login</a>
+    </nav>
   </header>
 
   <main class="content-container fade-in">
-    <!-- Hero Section -->
-    <section class="hero scroll-anim">
-      <div class="hero-content">
-        <h1>DubVault: Where the Underground Thrives</h1>
-        <p>Exclusive Drum & Bass, Speed Garage, and House tracks from indie producers to your decks—no mainstream BS.</p>
-        <a href="/register.html" class="button">Join the Revolution</a>
-      </div>
+    <section class="hero">
+      <h1 class="pulse">DubVault: Where the Underground Thrives</h1>
+      <p class="slide-in-left">Exclusive Drum & Bass, Speed Garage, and House tracks from indie producers—no mainstream sellouts.</p>
+      <a href="/register.html" class="button slide-in-right">Join the Revolution</a>
     </section>
 
-    <!-- Subscription Tiers -->
-    <section class="subscription-tiers scroll-anim">
-      <h2>Your Subscription, Your Sound</h2>
-      <div class="tiers-grid">
-        <div class="benefit-box">
+    <section class="subscription-tiers">
+      <h2 class="pulse">Your Subscription, Your Sound</h2>
+      <div class="benefits-container">
+        <div class="benefit-box fade-in">
           <h3>Basic Tier</h3>
           <p>£10/month or £100/year</p>
           <ul>
@@ -47,7 +40,7 @@
           </ul>
           <a href="/checkout.html" class="button">Get Basic</a>
         </div>
-        <div class="benefit-box">
+        <div class="benefit-box fade-in">
           <h3>Premium Tier</h3>
           <p>£15/month or £150/year</p>
           <ul>
@@ -61,27 +54,42 @@
       </div>
     </section>
 
-    <!-- Artist Benefits -->
-    <section class="artist-benefits scroll-anim">
-      <h2>Producers, This Is Your Vault</h2>
-      <p>Get £25–£50 upfront per track, keep your rights, and tap into a fanbase that actually cares. Plus, a slice of the subscription pie.</p>
-      <a href="/submit.html" class="button">Drop Your Track</a>
+    <section class="about-section">
+      <h2 class="pulse">About DubVault</h2>
+      <div class="about-grid">
+        <div class="about-card slide-in-left glitch-hover">
+          <h3 class="pulse">Our Mission</h3>
+          <p>We’re not just a platform—we’re a rebellion. DubVault’s built to amplify independent producers, pumping out raw Drum & Bass, Speed Garage, and House that hits different. This is where the underground lives, unshackled and untamed.</p>
+        </div>
+        <div class="about-card slide-in-right glitch-hover">
+          <h3 class="pulse">Why We Fight</h3>
+          <p>The mainstream’s a racket—starving artists with scraps while algorithms choke out the real shit. We’re here to flip that: upfront cash, revenue cuts, and community votes that let the streets decide what slaps.</p>
+        </div>
+        <div class="about-card slide-in-left glitch-hover">
+          <h3 class="pulse">Our Code</h3>
+          <p>Artists get paid real money and keep their soul. Culture stays pure—no watered-down beats. Fans run the show, voting up the fire and torching the trash. This ain’t corporate; it’s chaos with a cause.</p>
+        </div>
+        <div class="about-card slide-in-right glitch-hover">
+          <h3 class="pulse">The Future’s Loud</h3>
+          <p>We’re dropping a web-app to blast tracks offline (Q3 2025), vinyl and merch to flex the scene (2026), and workshops with underground OGs (Q4 2025). DubVault’s not stopping—watch us blow the roof off.</p>
+        </div>
+      </div>
     </section>
 
-    <!-- Community Features -->
-    <section class="community-features scroll-anim">
-      <h2>Community Runs the Show</h2>
-      <p>Vote on tracks, stack DubPoints, and help the underground grow—your voice matters here.</p>
-      <a href="/faq.html" class="button">How It Works</a>
+    <section class="artist-benefits">
+      <h2 class="pulse">Producers, This Is Your Vault</h2>
+      <p class="slide-in-left">Score £25–£50 upfront per track, hold your rights, and link with fans who actually get it. Oh, and you’re splitting the sub cash too.</p>
+      <a href="/submit.html" class="button slide-in-right">Drop Your Track</a>
     </section>
   </main>
 
-  <footer>
-    <p>© 2025 DubVault. All rights reserved.</p>
+  <footer class="footer fade-in">
+    <p class="fade-in">© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
-    // Scroll animation trigger (preserves your original functionality)
+    // Removed scroll-based visibility toggle for immediate display
+    // Keeping scroll event for potential future use, but animations trigger on load
     document.addEventListener('scroll', () => {
       const elements = document.querySelectorAll('.scroll-anim');
       elements.forEach(el => {
