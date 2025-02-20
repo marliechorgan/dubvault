@@ -1,4 +1,3 @@
-// index.js
 require('dotenv').config();
 
 const express = require('express');
@@ -21,23 +20,23 @@ const app = express();
 // Log the current environment for debugging
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
-// --- Trust proxy (required by Render) ---
+// Trust proxy (required by Render)
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE ==========
+// Security Middleware
 app.use(helmet());
 app.use(cors());
 app.use(compression());
 
-// ========== RATE LIMITING ==========
+// Rate Limiting
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
 app.use('/api', apiLimiter);
 
-// ========== STRIPE & PAYPAL SETUP ==========
+// Stripe & PayPal Setup
 const stripeInstance = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 const Environment = process.env.NODE_ENV === 'production'
   ? paypal.core.LiveEnvironment
@@ -49,10 +48,12 @@ const paypalClient = new paypal.core.PayPalHttpClient(
   )
 );
 
-// ========== MULTER (FILE UPLOAD) ==========
+// Multer (File Upload)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, file.fieldname === 'artwork' ? 'artworks/' : 'uploads/');
+    const dir = file.fieldname === 'artwork' ? 'artworks' : 'uploads';
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -61,30 +62,33 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ========== SESSION ==========
+// Session Setup
 app.use(session({
   secret: process.env.SESSION_SECRET || 'some_secret_key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' ? true : false, // true in production, false in development
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    // Force cookie domain in production
+    maxAge: 24 * 60 * 60 * 1000,
     domain: process.env.NODE_ENV === 'production' ? '.dubvault.co.uk' : undefined,
   }
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ========== STATIC FILES ==========
+// Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ========== HELPER FUNCTIONS ==========
+// Helper Functions
 function getUsers() {
   try {
+    if (!fs.existsSync('users.json')) {
+      fs.writeFileSync('users.json', JSON.stringify([]));
+    }
     const data = fs.readFileSync('users.json', 'utf8');
     return JSON.parse(data);
   } catch (err) {
@@ -103,6 +107,9 @@ function saveUsers(users) {
 
 function getTracks() {
   try {
+    if (!fs.existsSync('tracks.json')) {
+      fs.writeFileSync('tracks.json', JSON.stringify([]));
+    }
     const data = fs.readFileSync('tracks.json', 'utf8');
     const tracks = JSON.parse(data);
     if (!tracks || tracks.length === 0) {
@@ -125,6 +132,7 @@ function getTracks() {
         }
       ];
       saveTracks(sampleTracks);
+      console.log("Created sample tracks:", sampleTracks);
       return sampleTracks;
     }
     return tracks;
@@ -144,6 +152,9 @@ function saveTracks(tracks) {
 
 function getRatings() {
   try {
+    if (!fs.existsSync('ratings.json')) {
+      fs.writeFileSync('ratings.json', JSON.stringify([]));
+    }
     const data = fs.readFileSync('ratings.json', 'utf8');
     return JSON.parse(data);
   } catch (err) {
@@ -188,19 +199,21 @@ function generateErrorPage(title, message) {
     <p><a href="/" class="button">Return Home</a></p>
   </main>
   <footer>
-    <p>&copy; 2025 DubVault. All rights reserved.</p>
+    <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
 </body>
 </html>
   `;
 }
 
-// ========== ADVANCED WATERMARK ==========
+// Advanced Watermark (Skipping as per your request)
 async function applyUniqueWatermark(inputPath, outputPath, userId) {
   return new Promise((resolve, reject) => {
     const beepPath = path.join(__dirname, 'watermarks', 'beep.mp3');
     if (!fs.existsSync(beepPath)) {
-      return reject(new Error('Watermark beep.mp3 not found.'));
+      console.warn('Watermark beep.mp3 not found; skipping watermark');
+      fs.copyFileSync(inputPath, outputPath);
+      return resolve();
     }
     const randomOffset = Math.floor(Math.random() * 20) + 5;
     console.log(`[Watermark] Embedding beep for user ${userId} at ${randomOffset}s`);
@@ -224,53 +237,60 @@ async function applyUniqueWatermark(inputPath, outputPath, userId) {
   });
 }
 
-// ========== ROUTES ==========
-
-// Serve HTML pages
+// Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 app.get('/about.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
+
 app.get('/tracks', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tracks.html'));
 });
+
 app.get('/submit.html', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send(generateErrorPage('Unauthorized', 'You must be logged in.'));
   }
   res.sendFile(path.join(__dirname, 'public', 'submit.html'));
 });
+
 app.get('/profile.html', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send(generateErrorPage('Unauthorized', 'Login first.'));
   }
   res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });
+
 app.get('/faq.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'faq.html'));
 });
+
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
+
 app.get('/register.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
+
 app.get('/success.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'success.html'));
 });
+
 app.get('/cancel.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
-// --- DEBUG ENDPOINT: Return Entire Session ---
+// Debug Endpoint: Return Entire Session
 app.get('/api/debug', (req, res) => {
   console.log("[/api/debug] Session data:", req.session);
   res.json(req.session);
 });
 
-// --- CANCEL SUBSCRIPTION ENDPOINT ---
+// Cancel Subscription Endpoint
 app.post('/api/cancel-subscription', (req, res) => {
   console.log("[/api/cancel-subscription] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
@@ -287,7 +307,7 @@ app.post('/api/cancel-subscription', (req, res) => {
   return res.json({ success: true });
 });
 
-// --- GET ALL TRACKS (with ratings merged) ---
+// Get All Tracks (with ratings merged)
 app.get('/api/tracks', (req, res) => {
   try {
     const allTracks = getTracks();
@@ -301,6 +321,7 @@ app.get('/api/tracks', (req, res) => {
       }
       return { ...t, avgRating };
     });
+    console.log("[/api/tracks] Returning tracks:", mergedTracks);
     res.json(mergedTracks);
   } catch (err) {
     console.error("Error reading tracks.json:", err);
@@ -308,7 +329,7 @@ app.get('/api/tracks', (req, res) => {
   }
 });
 
-// --- SUBMIT TRACK ENDPOINT (protected) ---
+// Submit Track Endpoint (protected)
 app.post('/submit', upload.fields([
   { name: 'trackFile', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
@@ -317,8 +338,8 @@ app.post('/submit', upload.fields([
     return res.status(401).send(generateErrorPage('Unauthorized', 'Log in to submit.'));
   }
   const { title, artist } = req.body;
-  const trackFile = req.files.trackFile ? req.files.trackFile[0] : null;
-  const artworkFile = req.files.artwork ? req.files.artwork[0] : null;
+  const trackFile = req.files['trackFile'] ? req.files['trackFile'][0] : null;
+  const artworkFile = req.files['artwork'] ? req.files['artwork'][0] : null;
   if (!trackFile) {
     return res.status(400).send(generateErrorPage('No Track File', 'Upload an audio file.'));
   }
@@ -333,12 +354,7 @@ app.post('/submit', upload.fields([
   } catch (err) {
     console.error('[Watermark] Error:', err);
   }
-  let localTracks = [];
-  try {
-    localTracks = getTracks();
-  } catch (err) {
-    console.warn('tracks.json not found or invalid; starting fresh...');
-  }
+  let localTracks = getTracks();
   const newTrack = {
     id: Date.now(),
     title: title || 'Untitled',
@@ -370,7 +386,7 @@ app.post('/submit', upload.fields([
   `);
 });
 
-// --- REGISTER ENDPOINT ---
+// Register Endpoint
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   console.log("[/api/register] Attempting registration for:", username);
@@ -399,7 +415,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// --- LOGIN ENDPOINT ---
+// Login Endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   console.log("[/api/login] Login attempt for:", username);
@@ -430,7 +446,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// --- LOGOUT ENDPOINT ---
+// Logout Endpoint
 app.post('/api/logout', (req, res) => {
   console.log("[/api/logout] Logging out user:", req.session.userId);
   req.session.destroy(err => {
@@ -442,7 +458,7 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-// --- /api/me ENDPOINT ---
+// /api/me Endpoint
 app.get('/api/me', (req, res) => {
   console.log("[/api/me] Called. Session userId:", req.session.userId);
   if (!req.session.userId) {
@@ -459,7 +475,7 @@ app.get('/api/me', (req, res) => {
   res.json({ username: user.username, isPaid: user.isPaid });
 });
 
-// --- STRIPE CHECKOUT ENDPOINT ---
+// Stripe Checkout Endpoint
 app.post('/create-checkout-session', async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send('You must be logged in first.');
@@ -473,7 +489,7 @@ app.post('/create-checkout-session', async (req, res) => {
           price_data: {
             currency: 'gbp',
             product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 2000,
+            unit_amount: 1500,
             recurring: { interval: 'month' }
           },
           quantity: 1,
@@ -489,7 +505,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// --- STRIPE PORTAL SESSION ENDPOINT ---
+// Stripe Portal Session Endpoint
 app.post('/create-portal-session', async (req, res) => {
   const { session_id } = req.body;
   if (!session_id) return res.status(400).send('Missing session_id');
@@ -506,7 +522,7 @@ app.post('/create-portal-session', async (req, res) => {
   }
 });
 
-// --- PAYMENT SUCCESS ENDPOINT ---
+// Payment Success Endpoint
 app.get('/payment-success', async (req, res) => {
   const sessionId = req.query.session_id;
   if (!sessionId || !req.session.userId) {
@@ -529,16 +545,16 @@ app.get('/payment-success', async (req, res) => {
   }
 });
 
-// --- OPTIONAL PAYPAL ENDPOINT ---
+// Optional PayPal Endpoint
 app.post('/api/checkout/paypal', async (req, res) => {
   return res.json({ error: 'PayPal not used. Stripe is primary now.' });
 });
 
-// --- 404 HANDLER ---
+// 404 Handler
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// --- START THE SERVER ---
+// Start the Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DubVault running on port ${PORT}`));
