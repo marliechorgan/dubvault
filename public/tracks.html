@@ -2,43 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tracks - DubVault</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
-    <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/about.html">About</a>
-      <a href="/tracks" class="active">Tracks</a>
-      <a href="/submit.html">Submit</a>
-      <a href="/profile.html">My Profile</a>
-      <a href="/faq.html">FAQ</a>
-      <a href="/login.html">Login</a>
-    </nav>
+  <header class="site-header fade-in">
+    <div class="container">
+      <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+      <nav class="site-nav">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/about.html">About</a></li>
+          <li><a href="/tracks" class="active">Tracks</a></li>
+          <li><a href="/submit.html">Submit</a></li>
+          <li><a href="/profile.html">My Profile</a></li>
+          <li><a href="/faq.html">FAQ</a></li>
+          <li><a href="/login.html">Login</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <main class="content-container fade-in">
-    <h1>All Tracks</h1>
+  <main class="main-content container fade-in">
+    <h1 class="page-title">All Tracks</h1>
     <div class="controls">
-      <select id="sort-by">
-        <option value="rating">Sort by Rating</option>
-        <option value="genre">Sort by Genre</option>
-        <option value="expiry">Sort by Expiry</option>
-      </select>
-      <select id="filter-genre">
-        <option value="">All Genres</option>
-        <option value="Drum & Bass">Drum & Bass</option>
-        <option value="Speed Garage">Speed Garage</option>
-        <option value="House">House</option>
-      </select>
+      <div class="filter-group">
+        <label for="sort-by">Sort by:</label>
+        <select id="sort-by">
+          <option value="rating">Rating</option>
+          <option value="genre">Genre</option>
+          <option value="expiry">Expiry</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-genre">Filter by Genre:</label>
+        <select id="filter-genre">
+          <option value="">All Genres</option>
+          <option value="Drum & Bass">Drum & Bass</option>
+          <option value="Speed Garage">Speed Garage</option>
+          <option value="House">House</option>
+        </select>
+      </div>
     </div>
-    <ul class="track-list"></ul>
+    <section class="tracks-grid">
+      <ul class="track-list"></ul>
+    </section>
   </main>
 
-  <footer>
-    <p>© 2025 DubVault. All rights reserved.</p>
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 DubVault. All rights reserved.</p>
+    </div>
   </footer>
 
   <script>
@@ -62,29 +77,35 @@
         const li = document.createElement('li');
         li.className = 'track-item';
         li.innerHTML = `
-          <div class="track-details">
-            <h3>${track.title}</h3>
-            <p><strong>Artist:</strong> ${track.artist}</p>
-            <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
-            <p><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
-            <div class="rating-stars">
-              ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}">★</span>`).join('')}
+          <div class="track-card">
+            <div class="track-info">
+              <h3 class="track-title">${track.title}</h3>
+              <p class="track-artist"><strong>Artist:</strong> ${track.artist}</p>
+              <p class="track-genre"><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
+              <p class="track-expiry"><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
+              <div class="rating-stars">
+                ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}">★</span>`).join('')}
+              </div>
             </div>
-            <div class="track-player">
-              <audio controls src="/uploads/${track.filePath}"></audio>
+            ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
+            <div class="media-section">
+              <div class="track-player">
+                <audio controls src="/uploads/${track.filePath}"></audio>
+              </div>
+              <div class="video-player">
+                <h4>Live DJ Video</h4>
+                <video controls src="/videos/${track.videoPath}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
+              </div>
             </div>
-            <p><a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a></p>
-          </div>
-          ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
-          <div class="video-player">
-            <h4>Live DJ Video</h4>
-            <video controls src="/videos/${track.videoPath}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
-          </div>
-          <div class="comment-section">
-            <h4>Comments</h4>
-            <div class="comments"></div>
-            <input type="text" class="comment-input" placeholder="Add a comment">
-            <button class="button" onclick="postComment(${track.id})">Post</button>
+            <div class="download-section">
+              <a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a>
+            </div>
+            <div class="comment-section">
+              <h4>Comments</h4>
+              <div class="comments"></div>
+              <input type="text" class="comment-input" placeholder="Add a comment">
+              <button class="button comment-btn" onclick="postComment(${track.id})">Post</button>
+            </div>
           </div>
         `;
         trackListEl.appendChild(li);
@@ -106,7 +127,7 @@
               alert('Vote locked in!');
               loadTracks();
             } else {
-              alert('Log in to vote, fam.');
+              alert('Log in to vote.');
             }
           } catch (err) {
             alert('Voting glitch—try again.');
@@ -149,7 +170,7 @@
               input.value = '';
               loadTracks();
             } else {
-              alert('Log in to comment, fam.');
+              alert('Log in to comment.');
             }
           } catch (err) {
             alert('Commenting glitch—try again.');

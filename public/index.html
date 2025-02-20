@@ -2,36 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - DubVault</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
-    <nav class="nav">
-      <a href="/" class="active">Home</a>
-      <a href="/about.html">About</a>
-      <a href="/tracks">Tracks</a>
-      <a href="/submit.html">Submit</a>
-      <a href="/profile.html">My Profile</a>
-      <a href="/faq.html">FAQ</a>
-      <a href="/login.html">Login</a>
-    </nav>
+  <header class="site-header fade-in">
+    <div class="container">
+      <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+      <nav class="site-nav">
+        <ul>
+          <li><a href="/" class="active">Home</a></li>
+          <li><a href="/about.html">About</a></li>
+          <li><a href="/tracks">Tracks</a></li>
+          <li><a href="/submit.html">Submit</a></li>
+          <li><a href="/profile.html">My Profile</a></li>
+          <li><a href="/faq.html">FAQ</a></li>
+          <li><a href="/login.html">Login</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <main class="content-container fade-in">
+  <main class="main-content container fade-in">
+    <!-- Hero Section -->
     <section class="hero scroll-anim">
-      <h1>DubVault: Where the Underground Thrives</h1>
-      <p>Exclusive Drum & Bass, Speed Garage, and House tracks from indie producers to your decks—no mainstream BS.</p>
-      <a href="/register.html" class="button">Join the Revolution</a>
+      <div class="hero-content">
+        <h1>DubVault: Where the Underground Thrives</h1>
+        <p>Exclusive Drum & Bass, Speed Garage, and House tracks from indie producers to your decks—no mainstream BS.</p>
+        <a href="/register.html" class="button">Join the Revolution</a>
+      </div>
     </section>
 
+    <!-- Subscription Tiers -->
     <section class="subscription-tiers scroll-anim">
       <h2>Your Subscription, Your Sound</h2>
-      <div class="benefits-container">
-        <div class="benefit-box">
+      <div class="tiers-grid">
+        <div class="tier-card">
           <h3>Basic Tier</h3>
-          <p>£10/month or £100/year</p>
+          <p class="price">£10/month or £100/year</p>
           <ul>
             <li>3 weekly exclusive tracks</li>
             <li>Vote on what bangs</li>
@@ -40,9 +49,9 @@
           </ul>
           <a href="/checkout.html" class="button">Get Basic</a>
         </div>
-        <div class="benefit-box">
+        <div class="tier-card premium">
           <h3>Premium Tier</h3>
-          <p>£15/month or £150/year</p>
+          <p class="price">£15/month or £150/year</p>
           <ul>
             <li>All Basic perks</li>
             <li>48-hour early drops</li>
@@ -54,12 +63,14 @@
       </div>
     </section>
 
+    <!-- Artist Benefits -->
     <section class="artist-benefits scroll-anim">
       <h2>Producers, This Is Your Vault</h2>
       <p>Get £25–£50 upfront per track, keep your rights, and tap into a fanbase that actually cares. Plus, a slice of the subscription pie.</p>
       <a href="/submit.html" class="button">Drop Your Track</a>
     </section>
 
+    <!-- Community Features -->
     <section class="community-features scroll-anim">
       <h2>Community Runs the Show</h2>
       <p>Vote on tracks, stack DubPoints, and help the underground grow—your voice matters here.</p>
@@ -67,11 +78,14 @@
     </section>
   </main>
 
-  <footer>
-    <p>© 2025 DubVault. All rights reserved.</p>
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 DubVault. All rights reserved.</p>
+    </div>
   </footer>
 
   <script>
+    // Simple scroll animation trigger
     document.addEventListener('scroll', () => {
       const elements = document.querySelectorAll('.scroll-anim');
       elements.forEach(el => {
