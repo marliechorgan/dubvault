@@ -2,58 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tracks - DubVault</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="site-header fade-in">
-    <div class="container">
-      <img src="/logo.jpg" alt="DubVault Logo" class="logo">
-      <nav class="site-nav">
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/about.html">About</a></li>
-          <li><a href="/tracks" class="active">Tracks</a></li>
-          <li><a href="/submit.html">Submit</a></li>
-          <li><a href="/profile.html">My Profile</a></li>
-          <li><a href="/faq.html">FAQ</a></li>
-          <li><a href="/login.html">Login</a></li>
-        </ul>
-      </nav>
-    </div>
+  <header class="header fade-in">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
+    <nav class="nav">
+      <a href="/" class="nav-item slide-in-right">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/tracks" class="nav-item slide-in-right active">Tracks</a>
+      <a href="/submit.html" class="nav-item slide-in-right">Submit</a>
+      <a href="/profile.html" class="nav-item slide-in-right">My Profile</a>
+      <a href="/faq.html" class="nav-item slide-in-right">FAQ</a>
+      <a href="/login.html" class="nav-item slide-in-right">Login</a>
+    </nav>
   </header>
 
-  <main class="main-content container fade-in">
-    <h1 class="page-title">All Tracks</h1>
-    <div class="controls">
-      <div class="filter-group">
-        <label for="sort-by">Sort by:</label>
-        <select id="sort-by">
-          <option value="rating">Rating</option>
-          <option value="genre">Genre</option>
-          <option value="expiry">Expiry</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label for="filter-genre">Filter by Genre:</label>
-        <select id="filter-genre">
-          <option value="">All Genres</option>
-          <option value="Drum & Bass">Drum & Bass</option>
-          <option value="Speed Garage">Speed Garage</option>
-          <option value="House">House</option>
-        </select>
-      </div>
+  <main class="content-container fade-in">
+    <h1 class="pulse">All Tracks</h1>
+    <div class="controls scroll-anim">
+      <select id="sort-by" class="button">
+        <option value="rating">Sort by Rating</option>
+        <option value="genre">Sort by Genre</option>
+        <option value="expiry">Sort by Expiry</option>
+      </select>
+      <select id="filter-genre" class="button">
+        <option value="">All Genres</option>
+        <option value="Drum & Bass">Drum & Bass</option>
+        <option value="Speed Garage">Speed Garage</option>
+        <option value="House">House</option>
+      </select>
     </div>
-    <section class="tracks-grid">
-      <ul class="track-list"></ul>
-    </section>
+    <div class="track-grid" id="track-grid"></div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2025 DubVault. All rights reserved.</p>
-    </div>
+  <footer class="footer fade-in">
+    <p class="scroll-anim">© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
@@ -66,55 +51,51 @@
         tracks = await response.json();
         renderTracks();
       } catch (err) {
-        document.querySelector('.track-list').innerHTML = '<li>Tracks broke—hold tight.</li>';
+        document.getElementById('track-grid').innerHTML = '<div class="track-card glitch-error">Tracks broke—hold tight.</div>';
       }
     }
 
     function renderTracks(filteredTracks = tracks) {
-      const trackListEl = document.querySelector('.track-list');
-      trackListEl.innerHTML = filteredTracks.length === 0 ? '<li>No tracks yet—check back soon!</li>' : '';
+      const trackGridEl = document.getElementById('track-grid');
+      trackGridEl.innerHTML = filteredTracks.length === 0 ? '<div class="track-card glitch-error">No tracks yet—check back soon!</div>' : '';
       filteredTracks.forEach(track => {
-        const li = document.createElement('li');
-        li.className = 'track-item';
-        li.innerHTML = `
-          <div class="track-card">
-            <div class="track-info">
-              <h3 class="track-title">${track.title}</h3>
-              <p class="track-artist"><strong>Artist:</strong> ${track.artist}</p>
-              <p class="track-genre"><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
-              <p class="track-expiry"><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
-              <div class="rating-stars">
-                ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}">★</span>`).join('')}
-              </div>
+        const div = document.createElement('div');
+        div.className = 'track-card scroll-anim';
+        div.innerHTML = `
+          <div class="track-details">
+            <h3 class="pulse">${track.title}</h3>
+            <p><strong>Artist:</strong> ${track.artist}</p>
+            <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
+            <p><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
+            <div class="rating-stars">
+              ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}" data-track-id="${track.id}">★</span>`).join('')}
             </div>
-            ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
-            <div class="media-section">
-              <div class="track-player">
-                <audio controls src="/uploads/${track.filePath}"></audio>
-              </div>
-              <div class="video-player">
-                <h4>Live DJ Video</h4>
-                <video controls src="/videos/${track.videoPath}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
-              </div>
+            <div class="track-player">
+              <audio controls src="/uploads/${track.filePath}"></audio>
             </div>
-            <div class="download-section">
-              <a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a>
-            </div>
-            <div class="comment-section">
-              <h4>Comments</h4>
-              <div class="comments"></div>
-              <input type="text" class="comment-input" placeholder="Add a comment">
-              <button class="button comment-btn" onclick="postComment(${track.id})">Post</button>
-            </div>
+            <a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a>
+          </div>
+          ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art fade-in">` : ''}
+          <div class="video-player">
+            <h4>Live DJ Video</h4>
+            <video controls src="/videos/${track.videoPath || ''}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
+            <input type="file" accept="video/*" class="video-upload-input" data-track-id="${track.id}">
+            <button class="button video-upload-btn" data-track-id="${track.id}">Upload Video</button>
+          </div>
+          <div class="comment-section">
+            <h4>Comments</h4>
+            <div class="comments">${track.comments ? track.comments.map(c => `<p class="comment">${c.comment}</p>`).join('') : ''}</div>
+            <input type="text" class="comment-input" placeholder="Add a comment">
+            <button class="button comment-btn" data-track-id="${track.id}">Post</button>
           </div>
         `;
-        trackListEl.appendChild(li);
+        trackGridEl.appendChild(div);
       });
 
       // Voting logic
       document.querySelectorAll('.star').forEach(star => {
         star.addEventListener('click', async (e) => {
-          const trackId = e.target.closest('.track-item').querySelector('.download-btn').getAttribute('data-track-id');
+          const trackId = e.target.getAttribute('data-track-id');
           const vote = e.target.getAttribute('data-value');
           try {
             const response = await fetch('/api/vote', {
@@ -127,7 +108,7 @@
               alert('Vote locked in!');
               loadTracks();
             } else {
-              alert('Log in to vote.');
+              alert('Log in to vote, fam.');
             }
           } catch (err) {
             alert('Voting glitch—try again.');
@@ -153,30 +134,45 @@
         }, 1000);
       });
 
-      // Comment posting
-      window.postComment = async (trackId) => {
-        const input = document.querySelector(`.comment-input`);
-        const comment = input.value;
-        if (comment) {
-          try {
-            const response = await fetch('/api/comments', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ trackId, comment }),
-              credentials: 'include'
-            });
-            if (response.ok) {
-              alert('Comment posted!');
-              input.value = '';
-              loadTracks();
-            } else {
-              alert('Log in to comment.');
-            }
-          } catch (err) {
-            alert('Commenting glitch—try again.');
+      // Video upload
+      document.querySelectorAll('.video-upload-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const trackId = btn.getAttribute('data-track-id');
+          const input = btn.previousElementSibling;
+          if (input.files.length > 0) {
+            alert('Video upload coming soon!');
+            // Implement actual upload logic here
           }
-        }
-      };
+        });
+      });
+
+      // Comment posting
+      document.querySelectorAll('.comment-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const trackId = btn.getAttribute('data-track-id');
+          const input = btn.previousElementSibling;
+          const comment = input.value;
+          if (comment) {
+            try {
+              const response = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ trackId, comment }),
+                credentials: 'include'
+              });
+              if (response.ok) {
+                alert('Comment posted!');
+                input.value = '';
+                loadTracks();
+              } else {
+                alert('Log in to comment, fam.');
+              }
+            } catch (err) {
+              alert('Commenting glitch—try again.');
+            }
+          }
+        });
+      });
 
       // Lock downloads for non-subscribers (placeholder)
       const isSubscriber = false; // Replace with real check
@@ -208,6 +204,17 @@
     });
 
     window.onload = loadTracks;
+
+    // Scroll animations
+    document.addEventListener('scroll', () => {
+      const elements = document.querySelectorAll('.scroll-anim');
+      elements.forEach(el => {
+        const position = el.getBoundingClientRect();
+        if (position.top < window.innerHeight - 100) {
+          el.classList.add('visible');
+        }
+      });
+    });
   </script>
 </body>
 </html>
