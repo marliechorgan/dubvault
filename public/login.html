@@ -24,13 +24,13 @@
     <div class="form-container">
       <form id="loginForm">
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required placeholder="Enter your username">
+        <input type="text" id="username" name="username" required placeholder="Your username">
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required placeholder="Enter your password">
+        <input type="password" id="password" name="password" required placeholder="Your password">
         <button type="submit" class="button">Login</button>
       </form>
+      <p>No account? <a href="/register.html" style="color: #f99;">Register</a></p>
     </div>
-    <p>Need an account? <a href="/register.html" style="color: var(--accent1);">Register here</a>.</p>
   </main>
 
   <footer>
@@ -56,7 +56,7 @@
           alert(data.error || 'Login failed.');
         }
       } catch (err) {
-        alert('An error occurred. Please try again.');
+        alert('Error logging in. Try again.');
       }
     });
   </script>

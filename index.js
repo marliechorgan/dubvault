@@ -221,6 +221,7 @@ app.post('/api/cancel-subscription', (req, res) => {
   const userIndex = users.findIndex(u => u.id === req.session.userId);
   if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
   users[userIndex].isPaid = false;
+  users[userIndex].tier = null;
   saveUsers(users);
   return res.json({ success: true });
 });
@@ -246,8 +247,8 @@ app.post('/submit', upload.fields([{ name: 'trackFile', maxCount: 1 }, { name: '
   const trackFile = req.files['trackFile'] ? req.files['trackFile'][0] : null;
   const artworkFile = req.files['artwork'] ? req.files['artwork'][0] : null;
   if (!trackFile) return res.status(400).send(generateErrorPage('No Track File', 'Upload an audio file.'));
-  const twoMonthsFromNow = new Date();
-  twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+  const sixMonthsFromNow = new Date();
+  sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
   const inputPath = path.join(__dirname, 'uploads', trackFile.filename);
   const watermarkedOutput = path.join(__dirname, 'uploads', `wm_${trackFile.filename}`);
   try {
@@ -264,7 +265,7 @@ app.post('/submit', upload.fields([{ name: 'trackFile', maxCount: 1 }, { name: '
     artist: artist || 'Unknown Artist',
     filePath: trackFile.filename,
     artworkPath: artworkFile ? artworkFile.filename : null,
-    expiresOn: twoMonthsFromNow.toISOString()
+    expiresOn: sixMonthsFromNow.toISOString()
   };
   localTracks.push(newTrack);
   saveTracks(localTracks);
@@ -272,7 +273,8 @@ app.post('/submit', upload.fields([{ name: 'trackFile', maxCount: 1 }, { name: '
     <p><strong>Title:</strong> ${newTrack.title}</p>
     <p><strong>Artist:</strong> ${newTrack.artist}</p>
     ${artworkFile ? `<p><strong>Artwork:</strong> ${artworkFile.originalname}</p>` : ''}
-    <p><strong>Expires On:</strong> ${twoMonthsFromNow.toDateString()}</p>
+    <p><strong>Expires On:</strong> ${sixMonthsFromNow.toDateString()}</p>
+    <p>You’ll receive £25 soon!</p>
     <p><a href="/tracks" class="button">View All Tracks</a></p>
   `));
 });
@@ -283,7 +285,7 @@ app.post('/api/register', async (req, res) => {
   if (users.some(u => u.username === username)) return res.status(400).json({ error: 'Username already taken' });
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { id: Date.now(), username, password: hashedPassword, isPaid: false };
+    const newUser = { id: Date.now(), username, password: hashedPassword, isPaid: false, tier: null };
     users.push(newUser);
     saveUsers(users);
     req.session.userId = newUser.id;
@@ -327,11 +329,14 @@ app.get('/api/me', (req, res) => {
   const users = getUsers();
   const user = users.find(u => u.id === req.session.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ username: user.username, isPaid: user.isPaid });
+  res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier });
 });
 
 app.post('/create-checkout-session', async (req, res) => {
   if (!req.session.userId) return res.status(401).send('You must be logged in first.');
+  const { tier } = req.body;
+  const unitAmount = tier === 'basic' ? 1000 : 1500; // £10 or £15
+  const productName = tier === 'basic' ? 'DubVault Basic Subscription' : 'DubVault Premium Subscription';
   try {
     const session = await stripeInstance.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -340,14 +345,14 @@ app.post('/create-checkout-session', async (req, res) => {
         {
           price_data: {
             currency: 'gbp',
-            product_data: { name: "DubVault Premium Subscription" },
-            unit_amount: 1500,
+            product_data: { name: productName },
+            unit_amount: unitAmount,
             recurring: { interval: 'month' }
           },
           quantity: 1,
         },
       ],
-      success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`,
       cancel_url: `${req.headers.origin}/cancel.html`,
     });
     return res.redirect(303, session.url);
@@ -357,32 +362,17 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-app.post('/create-portal-session', async (req, res) => {
-  const { session_id } = req.body;
-  if (!session_id) return res.status(400).send('Missing session_id');
-  try {
-    const checkoutSession = await stripeInstance.checkout.sessions.retrieve(session_id);
-    const portalSession = await stripeInstance.billingPortal.sessions.create({
-      customer: checkoutSession.customer,
-      return_url: req.headers.origin,
-    });
-    return res.redirect(303, portalSession.url);
-  } catch (err) {
-    console.error('[Stripe] Error creating portal session:', err);
-    return res.status(500).send('Could not create portal session');
-  }
-});
-
 app.get('/payment-success', async (req, res) => {
-  const sessionId = req.query.session_id;
-  if (!sessionId || !req.session.userId) return res.redirect('/');
+  const { session_id, tier } = req.query;
+  if (!session_id || !req.session.userId) return res.redirect('/');
   try {
-    const session = await stripeInstance.checkout.sessions.retrieve(sessionId);
+    const session = await stripeInstance.checkout.sessions.retrieve(session_id);
     if (session.payment_status === 'paid') {
       const users = getUsers();
       const user = users.find(u => u.id === req.session.userId);
       if (user) {
         user.isPaid = true;
+        user.tier = tier;
         saveUsers(users);
       }
     }
