@@ -44,24 +44,30 @@
               <h3>${track.title}</h3>
               <p><strong>Artist:</strong> ${track.artist}</p>
               <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
-              <p><strong>Expires:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
-              <p><strong>Rating:</strong> ${track.avgRating ? track.avgRating + '/10' : 'Unrated'}</p>
-              <div class="vote-buttons">
-                <button class="vote-up" data-track-id="${track.id}">👍</button>
-                <button class="vote-down" data-track-id="${track.id}">👎</button>
+              <p><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
+              <div class="rating-stars">
+                ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}">&#9733;</span>`).join('')}
+              </div>
+              <div class="track-player">
+                <audio controls src="/uploads/${track.filePath}"></audio>
               </div>
               <p><a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a></p>
             </div>
             ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
+            <div class="video-upload">
+              <h4>Submit a Video</h4>
+              <input type="file" accept="video/*">
+              <button class="button">Upload Video</button>
+            </div>
           `;
           trackListEl.appendChild(li);
         });
 
         // Voting logic
-        document.querySelectorAll('.vote-up, .vote-down').forEach(button => {
-          button.addEventListener('click', async (e) => {
-            const trackId = e.target.getAttribute('data-track-id');
-            const vote = e.target.classList.contains('vote-up') ? 1 : -1;
+        document.querySelectorAll('.star').forEach(star => {
+          star.addEventListener('click', async (e) => {
+            const trackId = e.target.closest('.track-item').querySelector('.download-btn').getAttribute('data-track-id');
+            const vote = e.target.getAttribute('data-value');
             try {
               const response = await fetch('/api/vote', {
                 method: 'POST',
@@ -71,7 +77,7 @@
               });
               if (response.ok) {
                 alert('Vote locked in!');
-                loadTracks(); // Refresh ratings
+                loadTracks();
               } else {
                 alert('Log in to vote, fam.');
               }
@@ -81,8 +87,33 @@
           });
         });
 
+        // Countdown timers
+        document.querySelectorAll('.countdown').forEach(el => {
+          const expiry = new Date(el.getAttribute('data-expiry'));
+          const timer = setInterval(() => {
+            const now = new Date();
+            const diff = expiry - now;
+            if (diff <= 0) {
+              clearInterval(timer);
+              el.textContent = 'Expired';
+            } else {
+              const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+              const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              el.textContent = `${days}d ${hours}h ${minutes}m left`;
+            }
+          }, 1000);
+        });
+
+        // Video upload placeholder
+        document.querySelectorAll('.video-upload button').forEach(button => {
+          button.addEventListener('click', () => {
+            alert('Video upload coming soon!');
+          });
+        });
+
         // Lock downloads for non-subscribers (placeholder)
-        const isSubscriber = false; // Replace with real check later
+        const isSubscriber = false; // Replace with real check
         if (!isSubscriber) {
           document.querySelectorAll('.download-btn').forEach(btn => {
             btn.style.pointerEvents = 'none';

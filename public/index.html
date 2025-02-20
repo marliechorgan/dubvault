@@ -20,13 +20,13 @@
   </header>
 
   <main class="content-container fade-in">
-    <section class="hero">
+    <section class="hero scroll-anim">
       <h1>DubVault: Where the Underground Thrives</h1>
       <p>Exclusive Drum & Bass, Speed Garage, and House tracks from indie producers to your decks—no mainstream BS.</p>
       <a href="/register.html" class="button">Join the Revolution</a>
     </section>
 
-    <section class="subscription-tiers">
+    <section class="subscription-tiers scroll-anim">
       <h2>Your Subscription, Your Sound</h2>
       <div class="benefits-container">
         <div class="benefit-box">
@@ -54,13 +54,13 @@
       </div>
     </section>
 
-    <section class="artist-benefits">
+    <section class="artist-benefits scroll-anim">
       <h2>Producers, This Is Your Vault</h2>
       <p>Get £25–£50 upfront per track, keep your rights, and tap into a fanbase that actually cares. Plus, a slice of the subscription pie.</p>
       <a href="/submit.html" class="button">Drop Your Track</a>
     </section>
 
-    <section class="community-features">
+    <section class="community-features scroll-anim">
       <h2>Community Runs the Show</h2>
       <p>Vote on tracks, stack DubPoints, and help the underground grow—your voice matters here.</p>
       <a href="/faq.html" class="button">How It Works</a>
@@ -70,5 +70,17 @@
   <footer>
     <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
+
+  <script>
+    document.addEventListener('scroll', () => {
+      const elements = document.querySelectorAll('.scroll-anim');
+      elements.forEach(el => {
+        const position = el.getBoundingClientRect();
+        if (position.top < window.innerHeight - 100) {
+          el.classList.add('visible');
+        }
+      });
+    });
+  </script>
 </body>
 </html>

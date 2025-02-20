@@ -20,18 +20,17 @@
   </header>
 
   <main class="content-container fade-in">
-    <h1>About DubVault</h1>
-    <section class="mission">
+    <section class="mission scroll-anim">
       <h2>Our Mission</h2>
       <p>We’re here to empower independent producers and keep the raw, real sound of UK underground dance music—Drum & Bass, Speed Garage, House—alive and kicking.</p>
     </section>
 
-    <section class="why-dubvault">
+    <section class="why-dubvault scroll-anim">
       <h2>Why We Exist</h2>
       <p>Mainstream platforms screw over artists with pennies in royalties and bury tracks under algorithms. DubVault says nah—pay producers upfront, share the revenue, and let the community decide what slaps. No corporate playlists, just pure underground fire.</p>
     </section>
 
-    <section class="core-values">
+    <section class="core-values scroll-anim">
       <h2>What We Stand For</h2>
       <div class="values-container">
         <div class="value-box">
@@ -49,7 +48,7 @@
       </div>
     </section>
 
-    <section class="roadmap-teaser">
+    <section class="roadmap-teaser scroll-anim">
       <h2>What’s Next</h2>
       <p>We’re cooking a custom web-app for offline listening (Q3 2025), a merch store with vinyl and tees (2026), and workshops with scene legends (Q4 2025). The underground’s just getting started.</p>
     </section>
@@ -58,5 +57,17 @@
   <footer>
     <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
+
+  <script>
+    document.addEventListener('scroll', () => {
+      const elements = document.querySelectorAll('.scroll-anim');
+      elements.forEach(el => {
+        const position = el.getBoundingClientRect();
+        if (position.top < window.innerHeight - 100) {
+          el.classList.add('visible');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
