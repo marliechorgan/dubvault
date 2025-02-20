@@ -35,7 +35,7 @@
         if (!response.ok) throw new Error('Failed to fetch tracks');
         const tracks = await response.json();
         const trackListEl = document.querySelector('.track-list');
-        trackListEl.innerHTML = tracks.length === 0 ? '<li>No tracks available yet.</li>' : '';
+        trackListEl.innerHTML = tracks.length === 0 ? '<li>No tracks yet—check back soon!</li>' : '';
         tracks.forEach(track => {
           const li = document.createElement('li');
           li.className = 'track-item';
@@ -43,16 +43,55 @@
             <div class="track-details">
               <h3>${track.title}</h3>
               <p><strong>Artist:</strong> ${track.artist}</p>
-              <p><strong>Expires On:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
-              ${track.avgRating ? `<p><strong>Average Rating:</strong> ${track.avgRating}/10</p>` : ''}
-              <p><a href="/uploads/${track.filePath}" download class="button">Download Track</a></p>
+              <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
+              <p><strong>Expires:</strong> ${new Date(track.expiresOn).toLocaleDateString()}</p>
+              <p><strong>Rating:</strong> ${track.avgRating ? track.avgRating + '/10' : 'Unrated'}</p>
+              <div class="vote-buttons">
+                <button class="vote-up" data-track-id="${track.id}">👍</button>
+                <button class="vote-down" data-track-id="${track.id}">👎</button>
+              </div>
+              <p><a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a></p>
             </div>
-            ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork">` : ''}
+            ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
           `;
           trackListEl.appendChild(li);
         });
+
+        // Voting logic
+        document.querySelectorAll('.vote-up, .vote-down').forEach(button => {
+          button.addEventListener('click', async (e) => {
+            const trackId = e.target.getAttribute('data-track-id');
+            const vote = e.target.classList.contains('vote-up') ? 1 : -1;
+            try {
+              const response = await fetch('/api/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ trackId, vote }),
+                credentials: 'include'
+              });
+              if (response.ok) {
+                alert('Vote locked in!');
+                loadTracks(); // Refresh ratings
+              } else {
+                alert('Log in to vote, fam.');
+              }
+            } catch (err) {
+              alert('Voting glitch—try again.');
+            }
+          });
+        });
+
+        // Lock downloads for non-subscribers (placeholder)
+        const isSubscriber = false; // Replace with real check later
+        if (!isSubscriber) {
+          document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.5';
+            btn.textContent = 'Subscribe to Grab';
+          });
+        }
       } catch (err) {
-        document.querySelector('.track-list').innerHTML = '<li>Error loading tracks.</li>';
+        document.querySelector('.track-list').innerHTML = '<li>Tracks broke—hold tight.</li>';
       }
     }
     window.onload = loadTracks;

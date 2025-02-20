@@ -25,11 +25,12 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"], // Added Google Fonts
       imgSrc: ["'self'", "data:"],
       connectSrc: ["'self'"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"], // Added for font files
     },
   },
 }));
@@ -344,10 +345,19 @@ app.get('/api/me', (req, res) => {
   res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier });
 });
 
+app.post('/api/vote', (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
+  const { trackId, vote } = req.body;
+  let ratings = getRatings(); // Assume this reads ratings.json
+  ratings.push({ trackId, userId: req.session.userId, vote });
+  saveRatings(ratings); // Assume this writes to ratings.json
+  res.json({ success: true });
+});
+
 app.post('/create-checkout-session', async (req, res) => {
   if (!req.session.userId) return res.status(401).send('You must be logged in first.');
   const { tier } = req.body;
-  const unitAmount = tier === 'basic' ? 1000 : 1500; // £10 or £15
+  const unitAmount = tier === 'basic' ? 1000 : 1500;
   const productName = tier === 'basic' ? 'DubVault Basic Subscription' : 'DubVault Premium Subscription';
   try {
     const session = await stripeInstance.checkout.sessions.create({

@@ -25,7 +25,7 @@
       <div id="spinner" class="spinner"></div>
       <p id="membership-status" style="display:none;"></p>
     </div>
-    <button id="logoutButton" class="button accent2" style="display:none;">Logout</button>
+    <button id="logoutButton" class="button" style="display:none;">Logout</button>
   </main>
 
   <footer>
@@ -43,7 +43,7 @@
         spinner.style.display = 'none';
         if (!response.ok) {
           statusEl.style.display = 'block';
-          statusEl.textContent = response.status === 401 ? "Please log in to view your profile." : "Error loading profile.";
+          statusEl.textContent = response.status === 401 ? "You’re not logged in." : "Error loading profile.";
           if (response.status === 401) {
             statusEl.innerHTML += ' <a href="/login.html" class="button">Login</a>';
           }
@@ -51,16 +51,17 @@
         }
         const data = await response.json();
         statusEl.style.display = 'block';
-        statusEl.innerHTML = `<strong>Welcome, ${data.username}!</strong><br>` +
-          (data.isPaid ? "You have an active Premium subscription." : "You don’t have a subscription yet.");
+        statusEl.innerHTML = `<strong>Yo, ${data.username}!</strong><br>` +
+          (data.isPaid ? `Rocking the ${data.tier} tier.` : "No sub yet—level up!") +
+          `<br><strong>DubPoints:</strong> 0`; // Placeholder for now
         logoutBtn.style.display = 'inline-block';
 
         if (data.isPaid) {
           const cancelBtn = document.createElement('button');
-          cancelBtn.className = 'button accent2';
+          cancelBtn.className = 'button';
           cancelBtn.textContent = 'Cancel Subscription';
           cancelBtn.addEventListener('click', async () => {
-            if (confirm("Are you sure you want to cancel your subscription?")) {
+            if (confirm("Sure you want to cancel?")) {
               const cancelResponse = await fetch('/api/cancel-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -78,12 +79,13 @@
           statusEl.appendChild(document.createElement('br'));
           statusEl.appendChild(cancelBtn);
         } else {
-          statusEl.innerHTML += ' <a href="/checkout.html" class="button">Subscribe Now</a>';
+          statusEl.innerHTML += ' <a href="/checkout.html" class="button">Subscribe</a>';
         }
       } catch (err) {
         spinner.style.display = 'none';
         statusEl.style.display = 'block';
-        statusEl.textContent = "Error loading profile. Please try again.";
+        statusEl.textContent = "Error loading profile.";
+        console.error(err);
       }
 
       logoutBtn.addEventListener('click', async () => {
@@ -100,7 +102,7 @@
             alert('Logout failed.');
           }
         } catch (err) {
-          alert('Error during logout.');
+          alert('Error logging out.');
         }
       });
     });

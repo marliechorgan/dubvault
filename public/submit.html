@@ -21,18 +21,25 @@
 
   <main class="content-container fade-in">
     <h1>Submit Your Track</h1>
-    <p>Earn £25–£50 upfront plus revenue share. Retain full ownership!</p>
+    <p>Drop your track and score £25–£50 upfront + revenue share. You keep full ownership.</p>
     <div class="form-container">
       <form id="submitForm" enctype="multipart/form-data" method="POST" action="/submit">
         <label for="title">Track Title:</label>
-        <input type="text" id="title" name="title" required placeholder="Enter track title">
+        <input type="text" id="title" name="title" required placeholder="Track name">
         <label for="artist">Artist Name:</label>
-        <input type="text" id="artist" name="artist" required placeholder="Enter artist name">
-        <label for="trackFile">Upload Track (MP3):</label>
+        <input type="text" id="artist" name="artist" required placeholder="Your name">
+        <label for="genre">Genre:</label>
+        <select id="genre" name="genre" required>
+          <option value="" disabled selected>Select a genre</option>
+          <option value="Drum & Bass">Drum & Bass</option>
+          <option value="Speed Garage">Speed Garage</option>
+          <option value="House">House</option>
+        </select>
+        <label for="trackFile">Track (MP3):</label>
         <input type="file" id="trackFile" name="trackFile" accept="audio/mpeg" required>
-        <label for="artwork">Upload Artwork (Optional):</label>
+        <label for="artwork">Artwork (Optional):</label>
         <input type="file" id="artwork" name="artwork" accept="image/*">
-        <button type="submit" class="button">Submit Track</button>
+        <button type="submit" class="button">Submit</button>
       </form>
     </div>
   </main>
