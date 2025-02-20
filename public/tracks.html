@@ -21,6 +21,19 @@
 
   <main class="content-container fade-in">
     <h1>All Tracks</h1>
+    <div class="controls">
+      <select id="sort-by">
+        <option value="rating">Sort by Rating</option>
+        <option value="genre">Sort by Genre</option>
+        <option value="expiry">Sort by Expiry</option>
+      </select>
+      <select id="filter-genre">
+        <option value="">All Genres</option>
+        <option value="Drum & Bass">Drum & Bass</option>
+        <option value="Speed Garage">Speed Garage</option>
+        <option value="House">House</option>
+      </select>
+    </div>
     <ul class="track-list"></ul>
   </main>
 
@@ -29,102 +42,150 @@
   </footer>
 
   <script>
+    let tracks = [];
+
     async function loadTracks() {
       try {
         const response = await fetch('/api/tracks');
         if (!response.ok) throw new Error('Failed to fetch tracks');
-        const tracks = await response.json();
-        const trackListEl = document.querySelector('.track-list');
-        trackListEl.innerHTML = tracks.length === 0 ? '<li>No tracks yet—check back soon!</li>' : '';
-        tracks.forEach(track => {
-          const li = document.createElement('li');
-          li.className = 'track-item';
-          li.innerHTML = `
-            <div class="track-details">
-              <h3>${track.title}</h3>
-              <p><strong>Artist:</strong> ${track.artist}</p>
-              <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
-              <p><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
-              <div class="rating-stars">
-                ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}">&#9733;</span>`).join('')}
-              </div>
-              <div class="track-player">
-                <audio controls src="/uploads/${track.filePath}"></audio>
-              </div>
-              <p><a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a></p>
-            </div>
-            ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
-            <div class="video-upload">
-              <h4>Submit a Video</h4>
-              <input type="file" accept="video/*">
-              <button class="button">Upload Video</button>
-            </div>
-          `;
-          trackListEl.appendChild(li);
-        });
-
-        // Voting logic
-        document.querySelectorAll('.star').forEach(star => {
-          star.addEventListener('click', async (e) => {
-            const trackId = e.target.closest('.track-item').querySelector('.download-btn').getAttribute('data-track-id');
-            const vote = e.target.getAttribute('data-value');
-            try {
-              const response = await fetch('/api/vote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ trackId, vote }),
-                credentials: 'include'
-              });
-              if (response.ok) {
-                alert('Vote locked in!');
-                loadTracks();
-              } else {
-                alert('Log in to vote, fam.');
-              }
-            } catch (err) {
-              alert('Voting glitch—try again.');
-            }
-          });
-        });
-
-        // Countdown timers
-        document.querySelectorAll('.countdown').forEach(el => {
-          const expiry = new Date(el.getAttribute('data-expiry'));
-          const timer = setInterval(() => {
-            const now = new Date();
-            const diff = expiry - now;
-            if (diff <= 0) {
-              clearInterval(timer);
-              el.textContent = 'Expired';
-            } else {
-              const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-              const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-              el.textContent = `${days}d ${hours}h ${minutes}m left`;
-            }
-          }, 1000);
-        });
-
-        // Video upload placeholder
-        document.querySelectorAll('.video-upload button').forEach(button => {
-          button.addEventListener('click', () => {
-            alert('Video upload coming soon!');
-          });
-        });
-
-        // Lock downloads for non-subscribers (placeholder)
-        const isSubscriber = false; // Replace with real check
-        if (!isSubscriber) {
-          document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.5';
-            btn.textContent = 'Subscribe to Grab';
-          });
-        }
+        tracks = await response.json();
+        renderTracks();
       } catch (err) {
         document.querySelector('.track-list').innerHTML = '<li>Tracks broke—hold tight.</li>';
       }
     }
+
+    function renderTracks(filteredTracks = tracks) {
+      const trackListEl = document.querySelector('.track-list');
+      trackListEl.innerHTML = filteredTracks.length === 0 ? '<li>No tracks yet—check back soon!</li>' : '';
+      filteredTracks.forEach(track => {
+        const li = document.createElement('li');
+        li.className = 'track-item';
+        li.innerHTML = `
+          <div class="track-details">
+            <h3>${track.title}</h3>
+            <p><strong>Artist:</strong> ${track.artist}</p>
+            <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
+            <p><strong>Expires:</strong> <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
+            <div class="rating-stars">
+              ${[...Array(5)].map((_, i) => `<span class="star ${i < track.avgRating ? 'filled' : ''}" data-value="${i + 1}">★</span>`).join('')}
+            </div>
+            <div class="track-player">
+              <audio controls src="/uploads/${track.filePath}"></audio>
+            </div>
+            <p><a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a></p>
+          </div>
+          ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art">` : ''}
+          <div class="video-player">
+            <h4>Live DJ Video</h4>
+            <video controls src="/videos/${track.videoPath}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
+          </div>
+          <div class="comment-section">
+            <h4>Comments</h4>
+            <div class="comments"></div>
+            <input type="text" class="comment-input" placeholder="Add a comment">
+            <button class="button" onclick="postComment(${track.id})">Post</button>
+          </div>
+        `;
+        trackListEl.appendChild(li);
+      });
+
+      // Voting logic
+      document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', async (e) => {
+          const trackId = e.target.closest('.track-item').querySelector('.download-btn').getAttribute('data-track-id');
+          const vote = e.target.getAttribute('data-value');
+          try {
+            const response = await fetch('/api/vote', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ trackId, vote }),
+              credentials: 'include'
+            });
+            if (response.ok) {
+              alert('Vote locked in!');
+              loadTracks();
+            } else {
+              alert('Log in to vote, fam.');
+            }
+          } catch (err) {
+            alert('Voting glitch—try again.');
+          }
+        });
+      });
+
+      // Countdown timers
+      document.querySelectorAll('.countdown').forEach(el => {
+        const expiry = new Date(el.getAttribute('data-expiry'));
+        const timer = setInterval(() => {
+          const now = new Date();
+          const diff = expiry - now;
+          if (diff <= 0) {
+            clearInterval(timer);
+            el.textContent = 'Expired';
+          } else {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            el.textContent = `${days}d ${hours}h ${minutes}m left`;
+          }
+        }, 1000);
+      });
+
+      // Comment posting
+      window.postComment = async (trackId) => {
+        const input = document.querySelector(`.comment-input`);
+        const comment = input.value;
+        if (comment) {
+          try {
+            const response = await fetch('/api/comments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ trackId, comment }),
+              credentials: 'include'
+            });
+            if (response.ok) {
+              alert('Comment posted!');
+              input.value = '';
+              loadTracks();
+            } else {
+              alert('Log in to comment, fam.');
+            }
+          } catch (err) {
+            alert('Commenting glitch—try again.');
+          }
+        }
+      };
+
+      // Lock downloads for non-subscribers (placeholder)
+      const isSubscriber = false; // Replace with real check
+      if (!isSubscriber) {
+        document.querySelectorAll('.download-btn').forEach(btn => {
+          btn.style.pointerEvents = 'none';
+          btn.style.opacity = '0.5';
+          btn.textContent = 'Subscribe to Grab';
+        });
+      }
+    }
+
+    document.getElementById('sort-by').addEventListener('change', (e) => {
+      const sortBy = e.target.value;
+      if (sortBy === 'rating') {
+        tracks.sort((a, b) => b.avgRating - a.avgRating);
+      } else if (sortBy === 'genre') {
+        tracks.sort((a, b) => a.genre.localeCompare(b.genre));
+      } else if (sortBy === 'expiry') {
+        tracks.sort((a, b) => new Date(a.expiresOn) - new Date(b.expiresOn));
+      }
+      renderTracks();
+    });
+
+    document.getElementById('filter-genre').addEventListener('change', (e) => {
+      const genre = e.target.value;
+      const filteredTracks = genre ? tracks.filter(t => t.genre === genre) : tracks;
+      renderTracks(filteredTracks);
+    });
+
     window.onload = loadTracks;
   </script>
 </body>

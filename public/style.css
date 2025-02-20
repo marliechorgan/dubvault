@@ -190,3 +190,47 @@ footer p { font-size: 0.9rem; }
 .video-upload input[type="file"] {
   margin: 0.5rem 0;
 }
+
+.glitch-loader {
+  font-size: 2rem;
+  color: #fff;
+  position: relative;
+  animation: glitch 1s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-5px, 5px); }
+  40% { transform: translate(5px, -5px); }
+  60% { transform: translate(-5px, 5px); }
+  80% { transform: translate(5px, -5px); }
+  100% { transform: translate(0); }
+}
+
+/* Comment Section */
+.comment-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #111;
+  border-radius: 5px;
+}
+
+.comment {
+  margin-bottom: 0.5rem;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Video Player */
+.video-player {
+  margin-top: 1rem;
+}
+
+.video-player video {
+  width: 100%;
+  border-radius: 5px;
+}

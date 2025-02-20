@@ -22,8 +22,17 @@
   <main class="content-container fade-in">
     <h1>My Profile</h1>
     <div id="profileContent">
-      <div id="spinner" class="spinner"></div>
+      <div id="spinner" class="glitch-loader">Loading...</div>
       <p id="membership-status" style="display:none;"></p>
+      <div id="user-tracks" style="display:none;">
+        <h2>Your Tracks</h2>
+        <ul></ul>
+      </div>
+      <div id="user-votes" style="display:none;">
+        <h2>Voting History</h2>
+        <ul></ul>
+      </div>
+      <p id="dubpoints" style="display:none;"><strong>DubPoints:</strong> 0</p>
     </div>
     <button id="logoutButton" class="button" style="display:none;">Logout</button>
   </main>
@@ -37,6 +46,9 @@
       const spinner = document.getElementById('spinner');
       const statusEl = document.getElementById('membership-status');
       const logoutBtn = document.getElementById('logoutButton');
+      const userTracksEl = document.getElementById('user-tracks');
+      const userVotesEl = document.getElementById('user-votes');
+      const dubpointsEl = document.getElementById('dubpoints');
 
       try {
         const response = await fetch('/api/me', { credentials: 'include' });
@@ -52,9 +64,22 @@
         const data = await response.json();
         statusEl.style.display = 'block';
         statusEl.innerHTML = `<strong>Yo, ${data.username}!</strong><br>` +
-          (data.isPaid ? `Rocking the ${data.tier} tier.` : "No sub yet—level up!") +
-          `<br><strong>DubPoints:</strong> 0`; // Placeholder for now
+          (data.isPaid ? `Rocking the ${data.tier} tier.` : "No sub yet—level up!");
+        dubpointsEl.style.display = 'block';
+        dubpointsEl.innerHTML = `<strong>DubPoints:</strong> ${data.dubpoints || 0}`;
         logoutBtn.style.display = 'inline-block';
+
+        // Fetch user tracks
+        const tracksResponse = await fetch('/api/user-tracks', { credentials: 'include' });
+        const userTracks = await tracksResponse.json();
+        userTracksEl.style.display = 'block';
+        userTracksEl.querySelector('ul').innerHTML = userTracks.map(t => `<li>${t.title} - ${t.status}</li>`).join('');
+
+        // Fetch voting history
+        const votesResponse = await fetch('/api/user-votes', { credentials: 'include' });
+        const userVotes = await votesResponse.json();
+        userVotesEl.style.display = 'block';
+        userVotesEl.querySelector('ul').innerHTML = userVotes.map(v => `<li>Voted ${v.vote} on ${v.trackTitle}</li>`).join('');
 
         if (data.isPaid) {
           const cancelBtn = document.createElement('button');
