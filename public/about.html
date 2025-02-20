@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Home - DubVault</title>
+  <title>About - DubVault</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
     <nav class="nav">
-      <a href="/" class="nav-item slide-in-right active">Home</a>
-      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/" class="nav-item slide-in-right">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right active">About</a>
       <a href="/tracks" class="nav-item slide-in-right">Tracks</a>
       <a href="/submit.html" class="nav-item slide-in-right">Submit</a>
       <a href="/profile.html" class="nav-item slide-in-right">My Profile</a>
@@ -20,83 +20,32 @@
   </header>
 
   <main class="content-container fade-in">
-    <section class="hero scroll-anim">
-      <h1 class="pulse">DubVault: Where the Underground Thrives</h1>
-      <p class="slide-in-left">Exclusive Drum & Bass, Speed Garage, and House tracks from indie producers—no mainstream sellouts.</p>
-      <a href="/register.html" class="button slide-in-right">Join the Revolution</a>
-    </section>
-
-    <section class="subscription-tiers scroll-anim">
-      <h2 class="pulse">Your Subscription, Your Sound</h2>
-      <div class="benefits-container">
-        <div class="benefit-box fade-in">
-          <h3>Basic Tier</h3>
-          <p>£10/month or £100/year</p>
-          <ul>
-            <li>3 weekly exclusive tracks</li>
-            <li>Vote on what bangs</li>
-            <li>Ad-free vibes</li>
-            <li>Earn DubPoints</li>
-          </ul>
-          <a href="/checkout.html" class="button">Get Basic</a>
+    <section class="about-section">
+      <h1 class="pulse glitch-hover">About DubVault</h1>
+      <p class="slide-in-left tagline">“Where the Underground Thrives”</p>
+      <div class="about-grid">
+        <div class="about-card slide-in-left glitch-hover">
+          <h2 class="pulse">Our Vision</h2>
+          <p>DubVault’s a war machine for the underground UK dance scene—Drum & Bass, Speed Garage, House. We’re here to empower indie producers, arm DJs with exclusive cuts, and hook fans into a raw ecosystem that’s free from mainstream sludge. Profit’s the goal, and we’re gunning for it fast.</p>
         </div>
-        <div class="benefit-box fade-in">
-          <h3>Premium Tier</h3>
-          <p>£15/month or £150/year</p>
-          <ul>
-            <li>All Basic perks</li>
-            <li>48-hour early drops</li>
-            <li>Behind-the-scenes goodies</li>
-            <li>Exclusive merch drops</li>
-          </ul>
-          <a href="/checkout.html" class="button">Go Premium</a>
+        <div class="about-card slide-in-right glitch-hover">
+          <h2 class="pulse">Our Mission</h2>
+          <p>One platform, no compromise: producers cash out fairly with £25–£50 upfront plus revenue shares, DJs snag exclusive bangers, and fans steer the ship with votes—zero algorithms. We’re scaling quick, stacking revenue, and keeping it real.</p>
+        </div>
+        <div class="about-card slide-in-left glitch-hover">
+          <h2 class="pulse">Why Join?</h2>
+          <p>Artists: instant pay, keep your rights, six-month exclusivity, and promo juice—Q&As, remix contests, real fans. Fans: vote tracks up, earn DubPoints, snag merch. DJs: fresh cuts nobody else has. Mainstream’s a rip-off; we’re the antidote.</p>
+        </div>
+        <div class="about-card slide-in-right glitch-hover">
+          <h2 class="pulse">The Hustle</h2>
+          <p>Year 1: £171K profit, 2K subs. Year 2: £513K, merch and workshops kick in. Year 3: £1.1M, licensing marketplace drops. Viral TikTok, referral cash, and London DJ USBs fuel the fire. We’re not just saving the scene—we’re banking it.</p>
         </div>
       </div>
-    </section>
-
-    <section class="about-section scroll-anim">
-      <h2 class="pulse">About DubVault</h2>
-      <div class="about-content">
-        <div class="about-item slide-in-left">
-          <h3>Our Mission</h3>
-          <p>We’re here to empower independent producers and preserve the raw, real sound of UK underground dance music—Drum & Bass, Speed Garage, House.</p>
-        </div>
-        <div class="about-item slide-in-right">
-          <h3>Why We Exist</h3>
-          <p>Mainstream platforms rip off artists with piss-poor royalties and drown tracks in algorithms. DubVault flips the script—cash upfront, revenue sharing, and community curation.</p>
-        </div>
-        <div class="about-item slide-in-left">
-          <h3>What We Stand For</h3>
-          <p>Artist-first payouts, cultural integrity, and fan-driven power—no corporate playlists, just pure underground fire.</p>
-        </div>
-        <div class="about-item slide-in-right">
-          <h3>What’s Next</h3>
-          <p>Custom web-app (Q3 2025), merch drops (2026), and workshops with scene legends (Q4 2025). The underground’s only getting bigger.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="artist-benefits scroll-anim">
-      <h2 class="pulse">Producers, This Is Your Vault</h2>
-      <p class="slide-in-left">Get £25–£50 upfront per track, keep your rights, and connect with fans who give a damn. Plus, a cut of the sub cash.</p>
-      <a href="/submit.html" class="button slide-in-right">Drop Your Track</a>
     </section>
   </main>
 
   <footer class="footer fade-in">
-    <p class="scroll-anim">© 2025 DubVault. All rights reserved.</p>
+    <p class="fade-in">© 2025 DubVault. All rights reserved.</p>
   </footer>
-
-  <script>
-    document.addEventListener('scroll', () => {
-      const elements = document.querySelectorAll('.scroll-anim');
-      elements.forEach(el => {
-        const position = el.getBoundingClientRect();
-        if (position.top < window.innerHeight - 100) {
-          el.classList.add('visible');
-        }
-      });
-    });
-  </script>
 </body>
 </html>

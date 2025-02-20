@@ -81,6 +81,9 @@ body {
 .glitch-error {
   animation: glitchText 0.5s infinite;
 }
+.glitch-hover:hover {
+  animation: glitchText 0.5s infinite;
+}
 @keyframes glitchText {
   0% { text-shadow: 0.05em 0 0 #f99, -0.05em -0.025em 0 #0ff; }
   25% { text-shadow: -0.05em 0 0 #f99, 0.05em -0.025em 0 #0ff; }
@@ -112,6 +115,7 @@ header, footer {
   flex-wrap: wrap;
   margin-top: 1rem;
 }
+
 .nav-item {
   color: #fff;
   text-decoration: none;
@@ -131,7 +135,9 @@ header, footer {
   margin-top: 2rem;
   color: #aaa;
 }
-.footer p { font-size: 0.9rem; }
+.footer p {
+  font-size: 0.9rem;
+}
 
 /* Main Content Container */
 .content-container {
@@ -153,6 +159,7 @@ header, footer {
   margin-bottom: 1rem;
   color: #fff;
 }
+
 .content-container p,
 .content-container ul,
 .content-container ol {
@@ -179,6 +186,49 @@ header, footer {
   transform: translateY(-2px);
 }
 
+.inline-btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #f99;
+  color: #000;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.3s, transform 0.3s;
+}
+.inline-btn:hover {
+  background: #ff6666;
+  transform: translateY(-2px);
+}
+
+/* Form Elements (Consolidated) */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.form-field label {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.input-field, .select-field, .file-field {
+  padding: 0.8rem;
+  background: #111;
+  border: 1px solid #fff;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.input-field:focus, .select-field:focus, .file-field:focus {
+  border-color: #f99;
+  transform: scale(1.02);
+  outline: none;
+}
+
 /* Track Grid */
 .track-grid {
   display: grid;
@@ -201,7 +251,9 @@ header, footer {
 .track-details h3 {
   font-size: 1.5rem;
 }
-.track-details p { margin: 0.5rem 0; }
+.track-details p {
+  margin: 0.5rem 0;
+}
 
 .track-art {
   width: 100%;
@@ -292,20 +344,16 @@ header, footer {
   margin-bottom: 2rem;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .nav { flex-direction: column; gap: 1rem; }
-  .track-grid { grid-template-columns: 1fr; }
-  .track-card { padding: 1rem; }
+/* About Section */
+.about-section {
+  padding: 2rem 0;
 }
-
 .about-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
 }
-
 .about-card {
   background: #111;
   padding: 1.5rem;
@@ -316,21 +364,91 @@ header, footer {
   transform: translateY(-5px);
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
 }
-
-.about-card h3 {
-  font-size: 1.5rem;
+.about-card h2 {
+  font-size: 1.8rem;
   margin-bottom: 1rem;
 }
 
-.glitch-hover:hover {
-  animation: glitchText 0.5s infinite;
+/* Submit Section */
+.submit-section {
+  padding: 2rem 0;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.submit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.submit-btn {
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
 }
 
-/* Ensure glitchText is in your CSS if not already */
-@keyframes glitchText {
-  0% { text-shadow: 0.05em 0 0 #f99, -0.05em -0.025em 0 #0ff; }
-  25% { text-shadow: -0.05em 0 0 #f99, 0.05em -0.025em 0 #0ff; }
-  50% { text-shadow: 0.05em -0.025em 0 #f99, -0.05em 0 0 #0ff; }
-  75% { text-shadow: -0.05em -0.025em 0 #f99, 0.05em 0 0 #0ff; }
-  100% { text-shadow: 0.05em 0 0 #f99, -0.05em -0.025em 0 #0ff; }
+/* FAQ Section */
+.faq-section {
+  padding: 2rem 0;
+}
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.faq-card {
+  background: #111;
+  padding: 1.5rem;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.faq-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+.faq-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+.faq-item {
+  margin-bottom: 1.5rem;
+}
+.faq-item h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Login Section */
+.login-section {
+  padding: 2rem 0;
+}
+.login-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.login-btn {
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .nav { flex-direction: column; gap: 1rem; }
+  .track-grid, .about-grid, .faq-grid { grid-template-columns: 1fr; }
+  .track-card, .about-card, .faq-card { padding: 1rem; }
+  .submit-section h1, .faq-section h1, .login-section h1 { font-size: 2rem; }
+  .submit-section p, .faq-section p, .login-section p { font-size: 1rem; }
+  .form-grid, .login-grid { gap: 1rem; }
 }

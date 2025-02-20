@@ -7,34 +7,41 @@
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
     <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/about.html">About</a>
-      <a href="/tracks">Tracks</a>
-      <a href="/submit.html">Submit</a>
-      <a href="/profile.html">My Profile</a>
-      <a href="/faq.html">FAQ</a>
-      <a href="/login.html" class="active">Login</a>
+      <a href="/" class="nav-item slide-in-right">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/tracks" class="nav-item slide-in-right">Tracks</a>
+      <a href="/submit.html" class="nav-item slide-in-right">Submit</a>
+      <a href="/profile.html" class="nav-item slide-in-right">My Profile</a>
+      <a href="/faq.html" class="nav-item slide-in-right">FAQ</a>
+      <a href="/login.html" class="nav-item slide-in-right active">Login</a>
     </nav>
   </header>
 
   <main class="content-container fade-in">
-    <h1>Login</h1>
-    <div class="form-container">
-      <form id="loginForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required placeholder="Your username">
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required placeholder="Your password">
-        <button type="submit" class="button">Login</button>
-      </form>
-      <p>No account? <a href="/register.html" style="color: #f99;">Register</a></p>
-    </div>
+    <section class="login-section">
+      <h1 class="pulse glitch-hover">Login to the Vault</h1>
+      <p class="slide-in-left">Unlock the underground—exclusive tracks, voting power, and raw vibes await.</p>
+      <div class="login-grid slide-in-right">
+        <form id="loginForm" class="login-form">
+          <div class="form-field fade-in">
+            <label for="username" class="pulse">Username</label>
+            <input type="text" id="username" name="username" required placeholder="Your alias" class="input-field">
+          </div>
+          <div class="form-field fade-in">
+            <label for="password" class="pulse">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Your key" class="input-field">
+          </div>
+          <button type="submit" class="button login-btn glitch-hover">Enter the Scene</button>
+        </form>
+        <p class="slide-in-left">No account? <a href="/register.html" class="inline-btn">Register Now</a></p>
+      </div>
+    </section>
   </main>
 
-  <footer>
-    <p>© 2025 DubVault. All rights reserved.</p>
+  <footer class="footer fade-in">
+    <p class="fade-in">© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>

@@ -7,45 +7,57 @@
 </head>
 <body>
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
     <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/about.html">About</a>
-      <a href="/tracks">Tracks</a>
-      <a href="/submit.html" class="active">Submit</a>
-      <a href="/profile.html">My Profile</a>
-      <a href="/faq.html">FAQ</a>
-      <a href="/login.html">Login</a>
+      <a href="/" class="nav-item slide-in-right">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/tracks" class="nav-item slide-in-right">Tracks</a>
+      <a href="/submit.html" class="nav-item slide-in-right active">Submit</a>
+      <a href="/profile.html" class="nav-item slide-in-right">My Profile</a>
+      <a href="/faq.html" class="nav-item slide-in-right">FAQ</a>
+      <a href="/login.html" class="nav-item slide-in-right">Login</a>
     </nav>
   </header>
 
   <main class="content-container fade-in">
-    <h1>Submit Your Track</h1>
-    <p>Drop your track and score £25–£50 upfront + revenue share. You keep full ownership.</p>
-    <div class="form-container">
-      <form id="submitForm" enctype="multipart/form-data" method="POST" action="/submit">
-        <label for="title">Track Title:</label>
-        <input type="text" id="title" name="title" required placeholder="Track name">
-        <label for="artist">Artist Name:</label>
-        <input type="text" id="artist" name="artist" required placeholder="Your name">
-        <label for="genre">Genre:</label>
-        <select id="genre" name="genre" required>
-          <option value="" disabled selected>Select a genre</option>
-          <option value="Drum & Bass">Drum & Bass</option>
-          <option value="Speed Garage">Speed Garage</option>
-          <option value="House">House</option>
-        </select>
-        <label for="trackFile">Track (MP3):</label>
-        <input type="file" id="trackFile" name="trackFile" accept="audio/mpeg" required>
-        <label for="artwork">Artwork (Optional):</label>
-        <input type="file" id="artwork" name="artwork" accept="image/*">
-        <button type="submit" class="button">Submit</button>
-      </form>
-    </div>
+    <section class="submit-section">
+      <h1 class="pulse glitch-hover">Drop Your Banger</h1>
+      <p class="slide-in-left">Score £25–£50 upfront, keep your rights, and split the sub cash. Your track, your rules—6 months exclusive, then it’s free to roam.</p>
+      <div class="form-grid slide-in-right">
+        <form id="submitForm" enctype="multipart/form-data" method="POST" action="/submit" class="submit-form">
+          <div class="form-field fade-in">
+            <label for="title" class="pulse">Track Title</label>
+            <input type="text" id="title" name="title" required placeholder="Name your beast" class="input-field">
+          </div>
+          <div class="form-field fade-in">
+            <label for="artist" class="pulse">Artist Name</label>
+            <input type="text" id="artist" name="artist" required placeholder="Who’s the mastermind?" class="input-field">
+          </div>
+          <div class="form-field fade-in">
+            <label for="genre" class="pulse">Genre</label>
+            <select id="genre" name="genre" required class="select-field">
+              <option value="" disabled selected>Pick your vibe</option>
+              <option value="Drum & Bass">Drum & Bass</option>
+              <option value="Speed Garage">Speed Garage</option>
+              <option value="House">House</option>
+            </select>
+          </div>
+          <div class="form-field fade-in">
+            <label for="trackFile" class="pulse">Track (MP3)</label>
+            <input type="file" id="trackFile" name="trackFile" accept="audio/mpeg" required class="file-field">
+          </div>
+          <div class="form-field fade-in">
+            <label for="artwork" class="pulse">Artwork (Optional)</label>
+            <input type="file" id="artwork" name="artwork" accept="image/*" class="file-field">
+          </div>
+          <button type="submit" class="button submit-btn glitch-hover">Submit Your Fire</button>
+        </form>
+      </div>
+    </section>
   </main>
 
-  <footer>
-    <p>© 2025 DubVault. All rights reserved.</p>
+  <footer class="footer fade-in">
+    <p class="fade-in">© 2025 DubVault. All rights reserved.</p>
   </footer>
 </body>
 </html>
