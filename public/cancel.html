@@ -1,32 +1,32 @@
-<!-- public/cancel.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Payment Canceled - DubVault</title>
   <link rel="stylesheet" href="/style.css">
-  <style>
-    body {
-      text-align: center;
-      padding: 50px;
-    }
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #f44336;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      margin-top: 20px;
-    }
-    .button:hover {
-      background-color: #da190b;
-    }
-  </style>
 </head>
 <body>
-  <h1>Payment Canceled</h1>
-  <p>Your payment was canceled. You can try subscribing again if you wish.</p>
-  <a href="/profile.html" class="button">Go to Profile</a>
+  <header class="header fade-in">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/tracks">Tracks</a>
+      <a href="/submit.html">Submit</a>
+      <a href="/profile.html">My Profile</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="content-container fade-in">
+    <h1>Payment Canceled</h1>
+    <p>Your payment was canceled. Try subscribing again or contact support if you need help.</p>
+    <a href="/profile.html" class="button accent2">Go to Profile</a>
+  </main>
+
+  <footer>
+    <p>© 2025 DubVault. All rights reserved.</p>
+  </footer>
 </body>
 </html>

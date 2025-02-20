@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Login - DubVault</title>
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <!-- Consistent header -->
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -26,45 +25,37 @@
       <form id="loginForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required placeholder="Enter your username">
-        
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required placeholder="Enter your password">
-        
         <button type="submit" class="button">Login</button>
       </form>
     </div>
-    <p>Don't have an account? <a href="/register.html" style="color: #f99;">Register here</a>.</p>
+    <p>Need an account? <a href="/register.html" style="color: var(--accent1);">Register here</a>.</p>
   </main>
 
   <footer>
-    <p>&copy; 2025 DubVault. All rights reserved.</p>
+    <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
-    const loginForm = document.getElementById('loginForm');
-
-    loginForm.addEventListener('submit', async (e) => {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const username = e.target.username.value.trim();
       const password = e.target.password.value.trim();
-
       try {
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username, password }),
+          credentials: 'include'
         });
-
         const data = await response.json();
-
         if (data.success) {
           window.location.href = data.redirect;
         } else {
-          alert(data.error || 'Login failed. Please check your credentials.');
+          alert(data.error || 'Login failed.');
         }
       } catch (err) {
-        console.error('Error during login:', err);
         alert('An error occurred. Please try again.');
       }
     });

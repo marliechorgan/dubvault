@@ -1,34 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Checkout with Stripe</title>
+  <title>Checkout - DubVault</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
-      <a href="/" class="active">Home</a>
+      <a href="/">Home</a>
       <a href="/about.html">About</a>
       <a href="/tracks">Tracks</a>
       <a href="/submit.html">Submit</a>
       <a href="/profile.html">My Profile</a>
-      <a href="/merchandise">Merch</a>
-      <a href="/licensing">Licensing</a>
-      <a href="/remix">Remix</a>
       <a href="/faq.html">FAQ</a>
       <a href="/login.html">Login</a>
     </nav>
   </header>
+
   <main class="content-container fade-in">
-    <h1>Subscribe to DubVault Premium</h1>
-    <form action="/create-checkout-session" method="POST">
-      <button type="submit" class="button">Checkout: £10/month</button>
-    </form>
+    <h1>Subscribe to DubVault</h1>
+    <section class="subscription-tiers">
+      <div class="tier-container">
+        <div class="tier-box">
+          <h3>Basic Tier</h3>
+          <p>£10/month or £100/year</p>
+          <ul>
+            <li>3 weekly exclusive tracks</li>
+            <li>Voting rights</li>
+            <li>Ad-free listening</li>
+            <li>DubPoints rewards</li>
+          </ul>
+          <form action="/create-checkout-session" method="POST">
+            <input type="hidden" name="tier" value="basic">
+            <button type="submit" class="button">Subscribe Now</button>
+          </form>
+        </div>
+        <div class="tier-box">
+          <h3>Premium Tier</h3>
+          <p>£15/month or £150/year</p>
+          <ul>
+            <li>All Basic benefits</li>
+            <li>Early access to tracks</li>
+            <li>Behind-the-scenes content</li>
+            <li>Limited-edition merch drops</li>
+          </ul>
+          <form action="/create-checkout-session" method="POST">
+            <input type="hidden" name="tier" value="premium">
+            <button type="submit" class="button">Subscribe Now</button>
+          </form>
+        </div>
+      </div>
+    </section>
   </main>
+
   <footer>
-    <p>&copy; 2025 DubVault. All rights reserved.</p>
+    <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
 </body>
 </html>

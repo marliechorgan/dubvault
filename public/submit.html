@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Submit a Track - DubVault</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8">
+  <title>Submit Track - DubVault</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <!-- Consistent header -->
   <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo" />
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/about.html">About</a>
@@ -21,28 +20,25 @@
   </header>
 
   <main class="content-container fade-in">
-    <h1>Submit a New Track</h1>
+    <h1>Submit Your Track</h1>
+    <p>Earn £25–£50 upfront plus revenue share. Retain full ownership!</p>
     <div class="form-container">
-      <form action="/submit" method="POST" enctype="multipart/form-data">
+      <form id="submitForm" enctype="multipart/form-data" method="POST" action="/submit">
         <label for="title">Track Title:</label>
-        <input type="text" id="title" name="title" required placeholder="Enter the track title">
-        
+        <input type="text" id="title" name="title" required placeholder="Enter track title">
         <label for="artist">Artist Name:</label>
-        <input type="text" id="artist" name="artist" required placeholder="Enter the artist name">
-        
-        <label for="trackFile">Track File (MP3/WAV):</label>
-        <input type="file" id="trackFile" name="trackFile" accept=".mp3,.wav" required>
-        
-        <label for="artwork">Artwork (Optional):</label>
+        <input type="text" id="artist" name="artist" required placeholder="Enter artist name">
+        <label for="trackFile">Upload Track (MP3):</label>
+        <input type="file" id="trackFile" name="trackFile" accept="audio/mpeg" required>
+        <label for="artwork">Upload Artwork (Optional):</label>
         <input type="file" id="artwork" name="artwork" accept="image/*">
-        
         <button type="submit" class="button">Submit Track</button>
       </form>
     </div>
   </main>
 
   <footer>
-    <p>&copy; 2025 DubVault. All rights reserved.</p>
+    <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
 </body>
 </html>

@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>My Profile - DubVault</title>
-  <link rel="stylesheet" href="/style.css" />
-  <style>
-    /* Increase visibility of messages */
-    #membership-status {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-    }
-  </style>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <!-- Consistent header -->
   <header class="header fade-in">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo">
     <nav class="nav">
-      <a href="/" class="active">Home</a>
+      <a href="/">Home</a>
       <a href="/about.html">About</a>
       <a href="/tracks">Tracks</a>
       <a href="/submit.html">Submit</a>
-      <a href="/profile.html">My Profile</a>
+      <a href="/profile.html" class="active">My Profile</a>
       <a href="/faq.html">FAQ</a>
       <a href="/login.html">Login</a>
     </nav>
@@ -30,110 +22,84 @@
   <main class="content-container fade-in">
     <h1>My Profile</h1>
     <div id="profileContent">
-      <!-- Spinner shown while loading profile info -->
       <div id="spinner" class="spinner"></div>
-      <!-- Membership status will be inserted here -->
       <p id="membership-status" style="display:none;"></p>
     </div>
-    <button id="logoutButton" class="button" style="display:none;">Logout</button>
+    <button id="logoutButton" class="button accent2" style="display:none;">Logout</button>
   </main>
 
   <footer>
-    <p>&copy; 2025 DubVault. All rights reserved.</p>
+    <p>© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
-    document.addEventListener("DOMContentLoaded", async function() {
+    document.addEventListener("DOMContentLoaded", async () => {
       const spinner = document.getElementById('spinner');
       const statusEl = document.getElementById('membership-status');
       const logoutBtn = document.getElementById('logoutButton');
 
-      console.log("Fetching profile data from /api/me...");
       try {
-        const response = await fetch('/api/me');
+        const response = await fetch('/api/me', { credentials: 'include' });
         spinner.style.display = 'none';
-        console.log("Response status from /api/me:", response.status);
         if (!response.ok) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = response.status === 401 ? "Please log in to view your profile." : "Error loading profile.";
           if (response.status === 401) {
-            statusEl.style.display = 'block';
-            statusEl.textContent = "You are not logged in.";
-            console.log("User is not logged in (401).");
-            return;
+            statusEl.innerHTML += ' <a href="/login.html" class="button">Login</a>';
           }
-          throw new Error("Network response was not ok");
+          return;
         }
         const data = await response.json();
-        console.log("Received profile data:", data);
         statusEl.style.display = 'block';
         statusEl.innerHTML = `<strong>Welcome, ${data.username}!</strong><br>` +
-          (data.isPaid ? "You have an active subscription." : "You do not have a paid subscription.");
-        // Only show logout button if logged in
+          (data.isPaid ? "You have an active Premium subscription." : "You don’t have a subscription yet.");
         logoutBtn.style.display = 'inline-block';
 
-        // Add interactive controls based on subscription status
         if (data.isPaid) {
           const cancelBtn = document.createElement('button');
-          cancelBtn.className = 'button';
+          cancelBtn.className = 'button accent2';
           cancelBtn.textContent = 'Cancel Subscription';
-          cancelBtn.addEventListener('click', async function() {
+          cancelBtn.addEventListener('click', async () => {
             if (confirm("Are you sure you want to cancel your subscription?")) {
-              try {
-                const cancelResponse = await fetch('/api/cancel-subscription', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' }
-                });
-                const result = await cancelResponse.json();
-                console.log("Cancel subscription response:", result);
-                if (result.success) {
-                  alert('Subscription canceled successfully.');
-                  window.location.reload();
-                } else {
-                  alert('Cancellation failed.');
-                }
-              } catch (err) {
-                console.error("Error canceling subscription:", err);
-                alert('Error canceling subscription.');
+              const cancelResponse = await fetch('/api/cancel-subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+              });
+              const result = await cancelResponse.json();
+              if (result.success) {
+                alert('Subscription canceled.');
+                window.location.reload();
+              } else {
+                alert('Cancellation failed.');
               }
             }
           });
           statusEl.appendChild(document.createElement('br'));
           statusEl.appendChild(cancelBtn);
         } else {
-          // If not paid, add a subscribe form
-          const subscribeForm = document.createElement('form');
-          subscribeForm.method = 'POST';
-          subscribeForm.action = '/create-checkout-session';
-          const subscribeButton = document.createElement('button');
-          subscribeButton.type = 'submit';
-          subscribeButton.className = 'button';
-          subscribeButton.textContent = 'Subscribe Now';
-          subscribeForm.appendChild(subscribeButton);
-          statusEl.appendChild(document.createElement('br'));
-          statusEl.appendChild(subscribeForm);
+          statusEl.innerHTML += ' <a href="/checkout.html" class="button">Subscribe Now</a>';
         }
       } catch (err) {
         spinner.style.display = 'none';
         statusEl.style.display = 'block';
-        statusEl.textContent = "Error loading profile.";
-        console.error("Error fetching /api/me:", err);
+        statusEl.textContent = "Error loading profile. Please try again.";
       }
 
-      // Attach logout functionality
-      logoutBtn.addEventListener('click', async function() {
+      logoutBtn.addEventListener('click', async () => {
         try {
           const logoutResponse = await fetch('/api/logout', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
           });
           const logoutData = await logoutResponse.json();
-          console.log("Logout response:", logoutData);
           if (logoutData.success) {
             window.location.href = logoutData.redirect;
           } else {
             alert('Logout failed.');
           }
         } catch (err) {
-          console.error("Error during logout:", err);
           alert('Error during logout.');
         }
       });
