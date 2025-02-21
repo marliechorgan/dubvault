@@ -452,3 +452,128 @@ header, footer {
   .submit-section p, .faq-section p, .login-section p { font-size: 1rem; }
   .form-grid, .login-grid { gap: 1rem; }
 }
+
+.hero {
+  padding: 2rem 0;
+}
+.hero h1 {
+  font-size: 2.5rem;
+}
+.hero p {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+
+/* Subscription Tiers */
+.subscription-tiers {
+  padding: 2rem 0;
+}
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.tier-card {
+  background: #111;
+  padding: 1.5rem;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.tier-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+.tier-card h3 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+.tier-card .price {
+  font-size: 1.2rem;
+  color: #f99;
+  margin-bottom: 1rem;
+}
+.tier-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.perk {
+  font-size: 1rem;
+  background: #222;
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+/* Artist Benefits */
+.artist-benefits {
+  padding: 2rem 0;
+}
+.artist-benefits p {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2rem; }
+  .hero p, .artist-benefits p { font-size: 1rem; }
+  .tier-grid { grid-template-columns: 1fr; }
+}
+
+.profile-section {
+  padding: 2rem 0;
+}
+.profile-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.status-card, .tracks-card, .votes-card, .points-card {
+  background: #111;
+  padding: 1.5rem;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.status-card:hover, .tracks-card:hover, .votes-card:hover, .points-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.status-card h2, .tracks-card h2, .votes-card h2, .points-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.tracks-list, .votes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.track-item, .vote-item {
+  background: #222;
+  padding: 0.5rem;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.logout-btn {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-section h1 { font-size: 2rem; }
+  .profile-grid { grid-template-columns: 1fr; }
+}

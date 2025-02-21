@@ -2,11 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <title>About - DubVault</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: rgba(0, 0, 0, 0.85);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      padding: 20px;
+    }
+    .nav-item {
+      margin: 0 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: color 0.3s ease;
+    }
+    .nav-item:hover {
+      color: #ffffff;
+    }
+    .content-container {
+      padding: 60px 20px;
+    }
+    .about-card {
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .about-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+    }
+    footer {
+      background: rgba(0, 0, 0, 0.85);
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-  <header class="header fade-in">
+  <header class="header fade-in glitch-hover">
     <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
     <nav class="nav">
       <a href="/" class="nav-item slide-in-right">Home</a>
@@ -26,25 +70,25 @@
       <div class="about-grid">
         <div class="about-card slide-in-left glitch-hover">
           <h2 class="pulse">Our Vision</h2>
-          <p>DubVault’s a war machine for the underground UK dance scene—Drum & Bass, Speed Garage, House. We’re here to empower indie producers, arm DJs with exclusive cuts, and hook fans into a raw ecosystem that’s free from mainstream sludge. Profit’s the goal, and we’re gunning for it fast.</p>
+          <p>DubVault's a war machine for the underground UK dance scene—Drum & Bass, Speed Garage, House. We're here to empower indie producers, arm DJs with exclusive cuts, and hook fans into a raw ecosystem that's free from mainstream sludge. Profit's the goal, and we're gunning for it fast.</p>
         </div>
         <div class="about-card slide-in-right glitch-hover">
           <h2 class="pulse">Our Mission</h2>
-          <p>One platform, no compromise: producers cash out fairly with £25–£50 upfront plus revenue shares, DJs snag exclusive bangers, and fans steer the ship with votes—zero algorithms. We’re scaling quick, stacking revenue, and keeping it real.</p>
+          <p>One platform, no compromise: producers cash out fairly with £25–£50 upfront plus revenue shares, DJs snag exclusive bangers, and fans steer the ship with votes—zero algorithms. We're scaling quick, stacking revenue, and keeping it real.</p>
         </div>
         <div class="about-card slide-in-left glitch-hover">
           <h2 class="pulse">Why Join?</h2>
-          <p>Artists: instant pay, keep your rights, six-month exclusivity, and promo juice—Q&As, remix contests, real fans. Fans: vote tracks up, earn DubPoints, snag merch. DJs: fresh cuts nobody else has. Mainstream’s a rip-off; we’re the antidote.</p>
+          <p>Artists: instant pay, keep your rights, six-month exclusivity, and promo juice—Q&As, remix contests, real fans. Fans: vote tracks up, earn DubPoints, snag merch. DJs: fresh cuts nobody else has. Mainstream's a rip-off; we're the antidote.</p>
         </div>
         <div class="about-card slide-in-right glitch-hover">
           <h2 class="pulse">The Hustle</h2>
-          <p>Year 1: £171K profit, 2K subs. Year 2: £513K, merch and workshops kick in. Year 3: £1.1M, licensing marketplace drops. Viral TikTok, referral cash, and London DJ USBs fuel the fire. We’re not just saving the scene—we’re banking it.</p>
+          <p>Year 1: £171K profit, 2K subs. Year 2: £513K, merch and workshops kick in. Year 3: £1.1M, licensing marketplace drops. Viral TikTok, referral cash, and London DJ USBs fuel the fire. We're not just saving the scene—we're banking it.</p>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer fade-in">
+  <footer class="footer fade-in glitch-hover">
     <p class="fade-in">© 2025 DubVault. All rights reserved.</p>
   </footer>
 </body>

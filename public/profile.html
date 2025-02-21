@@ -6,39 +6,46 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="header fade-in">
-    <img src="/logo.jpg" alt="DubVault Logo" class="logo">
+  <header class="header fade-in glitch-hover">
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
     <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/about.html">About</a>
-      <a href="/tracks">Tracks</a>
-      <a href="/submit.html">Submit</a>
-      <a href="/profile.html" class="active">My Profile</a>
-      <a href="/faq.html">FAQ</a>
-      <a href="/login.html">Login</a>
+      <a href="/" class="nav-item slide-in-right">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/tracks" class="nav-item slide-in-right">Tracks</a>
+      <a href="/submit.html" class="nav-item slide-in-right">Submit</a>
+      <a href="/profile.html" class="nav-item slide-in-right active">My Profile</a>
+      <a href="/faq.html" class="nav-item slide-in-right">FAQ</a>
+      <a href="/login.html" class="nav-item slide-in-right">Login</a>
     </nav>
   </header>
 
   <main class="content-container fade-in">
-    <h1>My Profile</h1>
-    <div id="profileContent">
-      <div id="spinner" class="glitch-loader">Loading...</div>
-      <p id="membership-status" style="display:none;"></p>
-      <div id="user-tracks" style="display:none;">
-        <h2>Your Tracks</h2>
-        <ul></ul>
+    <section class="profile-section">
+      <h1 class="pulse glitch-hover">My Profile</h1>
+      <div id="profileContent" class="profile-grid">
+        <div id="spinner" class="glitch-loader">Loading...</div>
+        <div id="membership-status" class="status-card slide-in-left" style="display:none;">
+          <h2 class="pulse">Status</h2>
+        </div>
+        <div id="user-tracks" class="tracks-card slide-in-right" style="display:none;">
+          <h2 class="pulse">Your Tracks</h2>
+          <div class="tracks-list"></div>
+        </div>
+        <div id="user-votes" class="votes-card slide-in-left" style="display:none;">
+          <h2 class="pulse">Voting History</h2>
+          <div class="votes-list"></div>
+        </div>
+        <div id="dubpoints" class="points-card slide-in-right" style="display:none;">
+          <h2 class="pulse">DubPoints</h2>
+          <p><strong>Points:</strong> 0</p>
+        </div>
       </div>
-      <div id="user-votes" style="display:none;">
-        <h2>Voting History</h2>
-        <ul></ul>
-      </div>
-      <p id="dubpoints" style="display:none;"><strong>DubPoints:</strong> 0</p>
-    </div>
-    <button id="logoutButton" class="button" style="display:none;">Logout</button>
+      <button id="logoutButton" class="button glitch-hover logout-btn" style="display:none;">Logout</button>
+    </section>
   </main>
 
-  <footer>
-    <p>© 2025 DubVault. All rights reserved.</p>
+  <footer class="footer fade-in glitch-hover">
+    <p class="fade-in">© 2025 DubVault. All rights reserved.</p>
   </footer>
 
   <script>
@@ -55,38 +62,41 @@
         spinner.style.display = 'none';
         if (!response.ok) {
           statusEl.style.display = 'block';
-          statusEl.textContent = response.status === 401 ? "You’re not logged in." : "Error loading profile.";
-          if (response.status === 401) {
-            statusEl.innerHTML += ' <a href="/login.html" class="button">Login</a>';
-          }
+          statusEl.innerHTML = `<h2 class="pulse">Status</h2><p>${response.status === 401 ? "You’re not logged in." : "Error loading profile."}</p>` +
+            (response.status === 401 ? '<a href="/login.html" class="button inline-btn">Login</a>' : '');
           return;
         }
         const data = await response.json();
         statusEl.style.display = 'block';
-        statusEl.innerHTML = `<strong>Yo, ${data.username}!</strong><br>` +
-          (data.isPaid ? `Rocking the ${data.tier} tier.` : "No sub yet—level up!");
+        statusEl.innerHTML = `<h2 class="pulse">Status</h2><p><strong>Yo, ${data.username}!</strong></p>` +
+          `<p>${data.isPaid ? `Rocking the ${data.tier} tier.` : "No sub yet—level up!"}</p>` +
+          (data.isPaid ? `<button class="button cancel-btn glitch-hover">Cancel Subscription</button>` : '<a href="/checkout.html" class="button inline-btn">Subscribe</a>');
+        
         dubpointsEl.style.display = 'block';
-        dubpointsEl.innerHTML = `<strong>DubPoints:</strong> ${data.dubpoints || 0}`;
-        logoutBtn.style.display = 'inline-block';
+        dubpointsEl.innerHTML = `<h2 class="pulse">DubPoints</h2><p><strong>Points:</strong> ${data.dubpoints || 0}</p>`;
+        logoutBtn.style.display = 'block';
 
         // Fetch user tracks
         const tracksResponse = await fetch('/api/user-tracks', { credentials: 'include' });
         const userTracks = await tracksResponse.json();
         userTracksEl.style.display = 'block';
-        userTracksEl.querySelector('ul').innerHTML = userTracks.map(t => `<li>${t.title} - ${t.status}</li>`).join('');
+        userTracksEl.querySelector('.tracks-list').innerHTML = userTracks.length > 0 
+          ? userTracks.map(t => `<div class="track-item">${t.title} - ${t.status}</div>`).join('') 
+          : '<p>No tracks yet—drop some fire!</p>';
 
         // Fetch voting history
         const votesResponse = await fetch('/api/user-votes', { credentials: 'include' });
         const userVotes = await votesResponse.json();
         userVotesEl.style.display = 'block';
-        userVotesEl.querySelector('ul').innerHTML = userVotes.map(v => `<li>Voted ${v.vote} on ${v.trackTitle}</li>`).join('');
+        userVotesEl.querySelector('.votes-list').innerHTML = userVotes.length > 0 
+          ? userVotes.map(v => `<div class="vote-item">Voted ${v.vote} on ${v.trackTitle}</div>`).join('') 
+          : '<p>No votes yet—start rating!</p>';
 
-        if (data.isPaid) {
-          const cancelBtn = document.createElement('button');
-          cancelBtn.className = 'button';
-          cancelBtn.textContent = 'Cancel Subscription';
+        // Cancel subscription logic
+        const cancelBtn = document.querySelector('.cancel-btn');
+        if (cancelBtn) {
           cancelBtn.addEventListener('click', async () => {
-            if (confirm("Sure you want to cancel?")) {
+            if (confirm("Sure you want to ditch the sub?")) {
               const cancelResponse = await fetch('/api/cancel-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -94,22 +104,18 @@
               });
               const result = await cancelResponse.json();
               if (result.success) {
-                alert('Subscription canceled.');
+                alert('Subscription canned.');
                 window.location.reload();
               } else {
-                alert('Cancellation failed.');
+                alert('Cancellation glitch—try again.');
               }
             }
           });
-          statusEl.appendChild(document.createElement('br'));
-          statusEl.appendChild(cancelBtn);
-        } else {
-          statusEl.innerHTML += ' <a href="/checkout.html" class="button">Subscribe</a>';
         }
       } catch (err) {
         spinner.style.display = 'none';
         statusEl.style.display = 'block';
-        statusEl.textContent = "Error loading profile.";
+        statusEl.innerHTML = `<h2 class="pulse">Status</h2><p>Error loading profile. Something’s off—hit us up.</p>`;
         console.error(err);
       }
 
