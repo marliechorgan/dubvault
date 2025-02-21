@@ -38,6 +38,7 @@
         <div id="dubpoints" class="points-card slide-in-right" style="display:none;">
           <h2 class="pulse">DubPoints</h2>
           <p><strong>Points:</strong> 0</p>
+          <button id="claimPointsButton" class="button loyalty-btn">Claim Loyalty Points</button>
         </div>
       </div>
       <button id="logoutButton" class="button glitch-hover logout-btn" style="display:none;">Logout</button>
@@ -136,6 +137,55 @@
           alert('Error logging out.');
         }
       });
+
+      // Add Loyalty Points claim functionality
+      const claimBtn = document.getElementById('claimPointsButton');
+      if (claimBtn) {
+        claimBtn.addEventListener('click', async () => {
+          try {
+            const response = await fetch('/api/loyalty/claim', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+              // Update the dubpoints section with new points and re-add the claim button
+              dubpointsEl.innerHTML = `<h2 class="pulse">DubPoints</h2><p><strong>Points:</strong> ${data.dubpoints}</p><button id="claimPointsButton" class="button loyalty-btn">Claim Loyalty Points</button>`;
+              // Reattach the event listener after updating innerHTML
+              attachClaimListener();
+            } else {
+              alert(data.error || 'Error claiming points.');
+            }
+          } catch (err) {
+            alert('Error claiming points. Try again.');
+          }
+        });
+      }
+
+      function attachClaimListener() {
+        const newClaimBtn = document.getElementById('claimPointsButton');
+        if (newClaimBtn) {
+          newClaimBtn.addEventListener('click', async () => {
+            try {
+              const response = await fetch('/api/loyalty/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+              });
+              const data = await response.json();
+              if (data.success) {
+                dubpointsEl.innerHTML = `<h2 class="pulse">DubPoints</h2><p><strong>Points:</strong> ${data.dubpoints}</p><button id="claimPointsButton" class="button loyalty-btn">Claim Loyalty Points</button>`;
+                attachClaimListener();
+              } else {
+                alert(data.error || 'Error claiming points.');
+              }
+            } catch (err) {
+              alert('Error claiming points. Try again.');
+            }
+          });
+        }
+      }
     });
   </script>
 </body>

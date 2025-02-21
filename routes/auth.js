@@ -54,7 +54,7 @@ router.post(
 
       const { username, password } = req.body;
       const users = await getUsers();
-      const user = users.find(u => u.username === username);
+    const user = users.find(u => u.username === username);
       if (!user)
         return res.status(400).json({ error: 'Invalid username or password' });
 
@@ -85,7 +85,7 @@ router.post('/logout', (req, res, next) => {
 router.get('/me', async (req, res, next) => {
   try {
     if (!req.session.userId)
-      return res.status(401).json({ error: 'Not logged in' });
+      return res.status(401).json({ error: 'Not logged in. Please log in to access this resource.' });
     const users = await getUsers();
     const user = users.find(u => u.id === req.session.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });

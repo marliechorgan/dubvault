@@ -61,7 +61,7 @@
       filteredTracks.forEach(track => {
         const div = document.createElement('div');
         div.className = 'track-card scroll-anim';
-<![CDATA[
+        div.innerHTML = `
           <div class="track-card-content">
             <a href="/track.html?id=${track.id}" class="track-link">
               ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art fade-in">` : `<div class="placeholder-artwork"></div>`}
@@ -69,7 +69,6 @@
             </a>
             <p class="expiry">Expires: <span class="countdown" data-expiry="${track.expiresOn}"></span></p>
           </div>
-    ]]>
         `;
         trackGridEl.appendChild(div);
       });

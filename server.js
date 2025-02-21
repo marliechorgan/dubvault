@@ -13,6 +13,7 @@ const logger = require('./utils/logger');
 const authRoutes = require('./routes/auth');
 const tracksRoutes = require('./routes/tracks');
 const paymentsRoutes = require('./routes/payments');
+const loyaltyRoutes = require('./routes/loyalty');
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', authRoutes);
 app.use('/api', tracksRoutes);
 app.use('/api', paymentsRoutes);
+app.use('/api', loyaltyRoutes);
 
 // Serve HTML pages for non-API routes
 app.get('/', (req, res) =>
