@@ -83,26 +83,7 @@ app.use('/api', paymentsRoutes);
 app.use('/api', loyaltyRoutes);
 
 // Serve HTML pages for non-API routes
-app.get('/api/tracks', (req, res) => {
-let allTracks = getTracks();
-if (req.session && req.session.userId) {
-  const userId = req.session.userId;
-  const userTracks = allTracks.filter(t => t.artist == userId);
-  const publicTracks = allTracks.filter(t => t.artist != userId && t.status === 'approved');
-  allTracks = [...publicTracks, ...userTracks];
-} else {
-  allTracks = allTracks.filter(t => t.status === 'approved');
-}
-const ratings = getRatings();
-const comments = getComments();
-const mergedTracks = allTracks.map(t => {
-  const trackRatings = ratings.filter(r => r.trackId === String(t.id));
-  let avgRating = trackRatings.length > 0 ? Math.round(trackRatings.reduce((acc, rr) => acc + parseInt(rr.vote), 0) / trackRatings.length) : 0;
-  const trackComments = comments.filter(c => c.trackId === String(t.id));
-  return { ...t, avgRating, comments: trackComments };
-});
-res.json(mergedTracks);
-});
+
 
 app.get('/submit.html', (req, res) => {
   if (!req.session || !req.session.userId) {
@@ -130,6 +111,16 @@ app.get('/success.html', (req, res) =>
 app.get('/cancel.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'))
 );
+
+// Admin login endpoint (Mock admin login – replace with secure auth later)
+app.post('/api/admin-login', (req, res) => {
+    if (req.body.password === 'admin123') {
+      req.session.isAdmin = true;
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  });
 
 // 404 handler
 app.use((req, res, next) => {

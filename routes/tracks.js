@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const { getTracks, saveTracks, getRatings, saveRatings } = require('../utils/dataStore');
@@ -40,6 +39,7 @@ router.get('/tracks', async (req, res, next) => {
             )
           : null;
       return { ...t, avgRating };
+    });
     const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 

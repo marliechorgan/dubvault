@@ -148,22 +148,7 @@ app.post('/api/bulk-review-tracks', async (req, res) => {
   res.json({ success: true });
 });
 
-// Submit track (pending status)
-app.post('/submit', (req, res) => {
-  const tracks = getTracks();
-  const newTrack = {
-    id: Date.now(),
-    title: req.body.title,
-    artist: req.body.artist,
-    filePath: req.file.filename,
-    genre: req.body.genre,
-    expiresOn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending'
-  };
-  tracks.push(newTrack);
-  saveTracks(tracks);
-  res.redirect('/tracks');
-});
+  
 
 // User-specific endpoints
 app.get('/api/user-tracks', (req, res) => {
@@ -203,14 +188,7 @@ app.get('/api/analytics', (req, res) => {
 });
 
 // Mock admin login (replace with real auth in production)
-app.post('/api/admin-login', (req, res) => {
-  if (req.body.password === 'admin123') {
-    req.session.isAdmin = true;
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
-});
+  
 
 // Start the server
 const PORT = process.env.PORT || 3000;
