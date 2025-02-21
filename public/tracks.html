@@ -62,7 +62,8 @@
         const div = document.createElement('div');
         div.className = 'track-card scroll-anim';
         div.innerHTML = `
-          <div class="track-details">
+          ${track.artworkPath ? `<div class="track-image"><img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art fade-in"></div>` : ''}
+          <div class="track-info">
             <h3 class="pulse">${track.title}</h3>
             <p><strong>Artist:</strong> ${track.artist}</p>
             <p><strong>Genre:</strong> ${track.genre || 'Unknown'}</p>
@@ -75,18 +76,19 @@
             </div>
             <a href="/uploads/${track.filePath}" download class="button download-btn" data-track-id="${track.id}">Download</a>
           </div>
-          ${track.artworkPath ? `<img src="/artworks/${track.artworkPath}" alt="Artwork" class="track-art fade-in">` : ''}
-          <div class="video-player">
-            <h4>Live DJ Video</h4>
-            <video controls src="/videos/${track.videoPath || ''}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
-            <input type="file" accept="video/*" class="video-upload-input" data-track-id="${track.id}">
-            <button class="button video-upload-btn" data-track-id="${track.id}">Upload Video</button>
-          </div>
-          <div class="comment-section">
-            <h4>Comments</h4>
-            <div class="comments">${track.comments ? track.comments.map(c => `<p class="comment">${c.comment}</p>`).join('') : ''}</div>
-            <input type="text" class="comment-input" placeholder="Add a comment">
-            <button class="button comment-btn" data-track-id="${track.id}">Post</button>
+          <div class="track-extra">
+            <div class="video-player">
+              <h4>Live DJ Video</h4>
+              <video controls src="/videos/${track.videoPath || ''}" style="display: ${track.videoPath ? 'block' : 'none'}"></video>
+              <input type="file" accept="video/*" class="video-upload-input" data-track-id="${track.id}">
+              <button class="button video-upload-btn" data-track-id="${track.id}">Upload Video</button>
+            </div>
+            <div class="comment-section">
+              <h4>Comments</h4>
+              <div class="comments">${track.comments ? track.comments.map(c => `<p class="comment">${c.comment}</p>`).join('') : ''}</div>
+              <input type="text" class="comment-input" placeholder="Add a comment">
+              <button class="button comment-btn" data-track-id="${track.id}">Post</button>
+            </div>
           </div>
         `;
         trackGridEl.appendChild(div);

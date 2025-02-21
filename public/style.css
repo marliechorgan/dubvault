@@ -81,9 +81,13 @@ body {
 .glitch-error {
   animation: glitchText 0.5s infinite;
 }
+.glitch-hover {
+  transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
 .glitch-hover:hover {
-  animation: glitchText 0.5s infinite;
-  opacity: 1;
+  transform: scale(1.05);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 @keyframes glitchText {
   0% { text-shadow: 0.05em 0 0 #f99, -0.05em -0.025em 0 #0ff; }
