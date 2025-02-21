@@ -82,8 +82,8 @@ body {
   animation: glitchText 0.5s infinite;
 }
 .glitch-hover:hover {
-  animation: glitchText 0.5s infinite;
-  opacity: 1;
+  filter: brightness(0.95);
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 @keyframes glitchText {
   0% { text-shadow: 0.05em 0 0 #f99, -0.05em -0.025em 0 #0ff; }
@@ -185,7 +185,6 @@ header, footer {
 .button:hover {
   background: #ccc;
 }
-
 .inline-btn {
   display: inline-block;
   padding: 0.5rem 1rem;
@@ -359,8 +358,8 @@ header, footer {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .about-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 }
 .about-card h2 {
   font-size: 1.8rem;
@@ -479,8 +478,8 @@ header, footer {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .tier-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 }
 .tier-card h3 {
   font-size: 1.8rem;
