@@ -89,7 +89,7 @@ router.get('/me', async (req, res, next) => {
     const users = await getUsers();
     const user = users.find(u => u.id === req.session.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier });
+    res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier, dubpoints: user.dubpoints !== undefined ? user.dubpoints : 0 });
   } catch (err) {
     next(err);
   }
