@@ -5,20 +5,21 @@ const fs = require('fs').promises;
 const { getTracks, saveTracks, getRatings, saveRatings } = require('../utils/dataStore');
 const router = express.Router();
 
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const dir = file.fieldname === 'artwork' ? 'artworks' : 'uploads';
-    try {
-      await fs.mkdir(dir, { recursive: true });
-      cb(null, dir);
-    } catch (err) {
-      cb(err);
-    }
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'dubvault-tracks',
+    resource_type: 'auto'
   }
 });
 const upload = multer({ storage });
@@ -39,22 +40,24 @@ router.get('/tracks', async (req, res, next) => {
             )
           : null;
       return { ...t, avgRating };
-    });
-    res.json(mergedTracks);
-  } catch (err) {
-    next(err);
-  }
+    const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
+
+// Configure Cloudinary with credentials from .env
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// POST /submit - submit a new track (requires login)
-router.post(
-  '/submit',
-  upload.fields([
-    { name: 'trackFile', maxCount: 1 },
-    { name: 'artwork', maxCount: 1 }
-  ]),
-  async (req, res, next) => {
-    try {
+// Use CloudinaryStorage with Multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'dubvault-tracks',
+    resource_type: 'auto'
+  }
+});
       if (!req.session.userId)
         return res
           .status(401)
@@ -81,9 +84,10 @@ router.post(
         id: Date.now(),
         title: title || 'Untitled',
         artist: artist || 'Unknown Artist',
-        filePath: trackFile.filename,
-        artworkPath: artworkFile ? artworkFile.filename : null,
-        expiresOn: sixMonthsFromNow.toISOString()
+        filePath: trackFile.path,
+        artworkPath: artworkFile ? artworkFile.path : null,
+        expiresOn: sixMonthsFromNow.toISOString(),
+        status: 'pending'
       };
       localTracks.push(newTrack);
       await saveTracks(localTracks);

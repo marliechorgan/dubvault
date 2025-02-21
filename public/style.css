@@ -83,7 +83,6 @@ body {
 }
 .glitch-hover:hover {
   filter: brightness(0.95);
-  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 @keyframes glitchText {
   0% { text-shadow: 0.05em 0 0 #f99, -0.05em -0.025em 0 #0ff; }

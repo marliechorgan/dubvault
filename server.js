@@ -83,20 +83,33 @@ app.use('/api', paymentsRoutes);
 app.use('/api', loyaltyRoutes);
 
 // Serve HTML pages for non-API routes
-app.get('/', (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'index.html'))
-);
-app.get('/about.html', (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'about.html'))
-);
-app.get('/tracks', (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'tracks.html'))
-);
+app.get('/api/tracks', (req, res) => {
+let allTracks = getTracks();
+if (req.session && req.session.userId) {
+  const userId = req.session.userId;
+  const userTracks = allTracks.filter(t => t.artist == userId);
+  const publicTracks = allTracks.filter(t => t.artist != userId && t.status === 'approved');
+  allTracks = [...publicTracks, ...userTracks];
+} else {
+  allTracks = allTracks.filter(t => t.status === 'approved');
+}
+const ratings = getRatings();
+const comments = getComments();
+const mergedTracks = allTracks.map(t => {
+  const trackRatings = ratings.filter(r => r.trackId === String(t.id));
+  let avgRating = trackRatings.length > 0 ? Math.round(trackRatings.reduce((acc, rr) => acc + parseInt(rr.vote), 0) / trackRatings.length) : 0;
+  const trackComments = comments.filter(c => c.trackId === String(t.id));
+  return { ...t, avgRating, comments: trackComments };
+});
+res.json(mergedTracks);
+});
+
 app.get('/submit.html', (req, res) => {
-  if (!req.session.userId)
+  if (!req.session || !req.session.userId) {
     return res
       .status(401)
       .send('<h1>Unauthorized</h1><p>You must be logged in.</p>');
+  }
   res.sendFile(path.join(__dirname, 'public', 'submit.html'));
 });
 app.get('/profile.html', (req, res) =>
