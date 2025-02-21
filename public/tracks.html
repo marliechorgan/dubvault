@@ -108,12 +108,12 @@
             clearInterval(timer);
             el.textContent = 'Expired';
           } else {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  <![CDATA[
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
-      ]]>
+// Countdown calculation with seconds included:
+const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
         }, 1000);
       });
 

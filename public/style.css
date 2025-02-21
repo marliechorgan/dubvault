@@ -184,7 +184,6 @@ header, footer {
 }
 .button:hover {
   background: #ccc;
-  transform: translateY(-2px);
 }
 
 .inline-btn {
@@ -198,7 +197,6 @@ header, footer {
 }
 .inline-btn:hover {
   background: #ff6666;
-  transform: translateY(-2px);
 }
 
 /* Form Elements (Consolidated) */
@@ -245,7 +243,6 @@ header, footer {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .track-card:hover {
-  transform: translateY(-5px);
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
 }
 
@@ -545,7 +542,6 @@ header, footer {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .status-card:hover, .tracks-card:hover, .votes-card:hover, .points-card:hover {
-  transform: translateY(-5px);
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
 }
 
