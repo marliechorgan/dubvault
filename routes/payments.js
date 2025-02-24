@@ -20,8 +20,12 @@ const paypalClient = new paypal.core.PayPalHttpClient(
 // POST /create-checkout-session - create stripe checkout session (requires login)
 router.post('/create-checkout-session', async (req, res, next) => {
   try {
-    if (!req.session.userId)
+    console.log('POST /create-checkout-session - Session:', req.session);
+    if (!req.session.userId) {
+      console.log('No userId in session - Returning 401');
       return res.status(401).send('You must be logged in first.');
+    }
+    console.log('Creating Stripe checkout session for userId:', req.session.userId);
     const session = await stripeInstance.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -34,9 +38,12 @@ router.post('/create-checkout-session', async (req, res, next) => {
       success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=standard`,
       cancel_url: `${req.headers.origin}/cancel.html`
     });
+    console.log('Stripe session created:', session.id);
     res.redirect(303, session.url);
   } catch (err) {
-    next(err);
+    console.error('Error in /create-checkout-session:', err.message);
+    console.error('Stack trace:', err.stack);
+    res.status(500).json({ error: 'Failed to create checkout session', details: err.message });
   }
 });
 
