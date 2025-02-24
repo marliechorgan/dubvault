@@ -16,7 +16,6 @@ const paymentsRoutes = require('./routes/payments');
 const loyaltyRoutes = require('./routes/loyalty');
 
 const app = express();
-
 app.set('trust proxy', 1);
 
 // Security middleware
@@ -36,11 +35,13 @@ app.use(
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"]
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        formAction: ["'self'", "https://checkout.stripe.com"]
       }
     }
   })
 );
+
 app.use(cors());
 app.use(compression());
 
@@ -75,7 +76,7 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api', tracksRoutes);
 app.use('/api', loyaltyRoutes);
-app.use(paymentsRoutes); // Mount at root to match /create-checkout-session
+app.use(paymentsRoutes); // mount at root to match /create-checkout-session
 
 // Static file serving
 app.use(express.static(path.join(__dirname, 'public')));
@@ -83,8 +84,6 @@ app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve HTML pages for non-API routes
-
-
 app.get('/submit.html', (req, res) => {
   if (!req.session || !req.session.userId) {
     return res
@@ -111,20 +110,19 @@ app.get('/success.html', (req, res) =>
 app.get('/cancel.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'))
 );
-
 app.get('/tracks', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'tracks.html'))
 );
 
 // Admin login endpoint (Mock admin login – replace with secure auth later)
 app.post('/api/admin-login', (req, res) => {
-    if (req.body.password === 'admin123') {
-      req.session.isAdmin = true;
-      res.json({ success: true });
-    } else {
-      res.status(401).json({ error: 'Invalid credentials' });
-    }
-  });
+  if (req.body.password === 'admin123') {
+    req.session.isAdmin = true;
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
 
 app.get('/api/config', (req, res) => {
   res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '' });
@@ -138,34 +136,11 @@ app.use((req, res, next) => {
 // Centralized error handling middleware
 app.use((err, req, res, next) => {
   logger.error(err.stack);
-const express = require('express');
-const helmet = require('helmet'); // Ensure helmet is installed: npm install helmet
-const app = express();
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Start server
 const port = process.env.PORT || 3000;
-
-// Configure Helmet CSP to allow form actions to https://checkout.stripe.com
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      useDefaults: true,
-      directives: {
-        "default-src": ["'self'"],
-        // If you already have other script-src or style-src directives, keep them and just add the below line:
-        "form-action": ["'self'", "https://checkout.stripe.com"]
-      }
-    }
-  })
-);
-
-// If you’re setting CSP headers manually instead of using Helmet, you can do:
-// app.use((req, res, next) => {
-//   res.setHeader(
-//     'Content-Security-Policy',
-//     "default-src 'self'; form-action 'self' https://checkout.stripe.com; " +
-//     "script-src 'self' https://js.stripe.com; " +
-//     // ... any other directives ...
-//   );
-//   next();
-// });
-
-app.use(express.json());
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
