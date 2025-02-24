@@ -22,10 +22,18 @@ router.post('/create-checkout-session', async (req, res, next) => {
   try {
     console.log('POST /create-checkout-session - Session:', req.session);
     if (!req.session.userId) {
-      console.log('No userId in session - Returning 401');
+    router.post('/create-checkout-session', async (req, res, next) => {
+  try {
+    if (!req.session.userId)
       return res.status(401).send('You must be logged in first.');
-    }
-    console.log('Creating Stripe checkout session for userId:', req.session.userId);
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+    console.log('Base URL for checkout session:', baseUrl);
+    const successUrl = `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=standard`;
+    const cancelUrl = `${baseUrl}/cancel.html`;
+    console.log('Success URL:', successUrl);
+    console.log('Cancel URL:', cancelUrl);
     const session = await stripeInstance.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -35,14 +43,17 @@ router.post('/create-checkout-session', async (req, res, next) => {
           quantity: 1
         }
       ],
-      success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=standard`,
-      cancel_url: `${req.headers.origin}/cancel.html`
+      success_url: successUrl,
+      cancel_url: cancelUrl
     });
     console.log('Stripe session created:', session.id);
     res.redirect(303, session.url);
   } catch (err) {
     console.error('Error in /create-checkout-session:', err.message);
     console.error('Stack trace:', err.stack);
+    res.status(500).json({ error: 'Failed to create checkout session', details: err.message });
+  }
+});
     res.status(500).json({ error: 'Failed to create checkout session', details: err.message });
   }
 });
