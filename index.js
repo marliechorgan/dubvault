@@ -152,7 +152,12 @@ app.post('/api/bulk-review-tracks', async (req, res) => {
 
 // User-specific endpoints
 app.get('/api/user-tracks', (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
+  console.log('GET /api/user-tracks - Session:', req.session);
+  if (!req.session.userId) {
+    console.log('No userId in session for /api/user-tracks');
+    return res.status(401).json({ error: 'Not logged in' });
+  }
+  console.log('Fetching tracks for userId:', req.session.userId);
   const tracks = getTracks().filter(t => t.artist === req.session.userId);
   res.json(tracks);
 });

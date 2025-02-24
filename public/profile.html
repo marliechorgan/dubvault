@@ -63,13 +63,15 @@
         spinner.style.display = 'none';
         const rawText = await response.text();
         console.log('Raw response from /api/me:', rawText);
+        const sanitizedText = rawText.trim();
+        console.log('Sanitized response:', sanitizedText);
         let data;
         try {
-          data = JSON.parse(rawText);
+          data = JSON.parse(sanitizedText);
         } catch (jsonErr) {
-          console.error('Failed to parse response as JSON:', jsonErr);
+          console.error('Failed to parse sanitized response as JSON:', jsonErr);
           statusEl.style.display = 'block';
-          statusEl.innerHTML = `<h2 class="pulse">Status</h2><p>Error loading profile. Status: ${response.status} - Invalid response format: ${rawText}</p>`;
+          statusEl.innerHTML = `<h2 class="pulse">Status</h2><p>Error loading profile. Status: ${response.status} - Invalid response format: ${sanitizedText}</p>`;
           return;
         }
         if (!response.ok) {
