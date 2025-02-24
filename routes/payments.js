@@ -63,7 +63,9 @@ router.post('/create-checkout-session', async (req, res, next) => {
 router.get('/payment-success', async (req, res, next) => {
   try {
     const { session_id, tier } = req.query;
-    if (!session_id || !req.session.userId) return res.redirect('/');
+    if (!session_id || !req.session.userId) {
+      return res.redirect('/');
+    }
     const session = await stripeInstance.checkout.sessions.retrieve(session_id);
     if (session.payment_status === 'paid') {
       const users = await getUsers();
