@@ -31,7 +31,7 @@ router.post('/create-checkout-session', async (req, res, next) => {
       mode: 'subscription',
       line_items: [
         {
-          price: 'prod_RUTqP84xE1Pnmp', // Pre-existing £20/month subscription price ID
+          price: 'price_1QbUsqCBSWQorwTPmEttjsGr', // £20/month subscription price ID
           quantity: 1
         }
       ],
