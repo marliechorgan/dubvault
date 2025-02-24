@@ -57,8 +57,9 @@ router.get('/payment-success', async (req, res, next) => {
     const session = await stripeInstance.checkout.sessions.retrieve(session_id);
     if (session.payment_status === 'paid') {
       const usersCollection = req.db.collection('users');
-      await usersCollection.updateOne(
-        { _id: req.session.userId },
+const { ObjectId } = require('mongodb');
+await usersCollection.updateOne(
+        { _id: new ObjectId(req.session.userId) },
         { $set: { isPaid: true, tier } }
       );
     }
@@ -76,7 +77,7 @@ router.post('/cancel-subscription', async (req, res, next) => {
     }
     const usersCollection = req.db.collection('users');
     await usersCollection.updateOne(
-      { _id: req.session.userId },
+      { _id: new ObjectId(req.session.userId) },
       { $set: { isPaid: false, tier: null } }
     );
     res.json({ success: true });

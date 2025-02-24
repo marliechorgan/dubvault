@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
+const { ObjectId } = require('mongodb');
 
 router.use((req, res, next) => {
   req.db = req.app.locals.db; // Access the database from app.locals
@@ -63,7 +64,7 @@ router.post(
 
       const { username, password } = req.body;
       const usersCollection = req.db.collection('users');
-      const user = await usersCollection.findOne({ username });
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.session.userId) });
       if (!user) {
         return res.status(400).json({ error: 'Invalid username or password' });
       }
@@ -98,8 +99,12 @@ router.get('/me', async (req, res, next) => {
     if (!req.session.userId) {
       return res.status(401).json({ error: 'Not logged in' });
     }
+
+    // Convert string to ObjectId:
+    const userIdObj = new ObjectId(req.session.userId);
+
     const usersCollection = req.db.collection('users');
-    const user = await usersCollection.findOne({ _id: req.session.userId });
+    const user = await usersCollection.findOne({ _id: userIdObj });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

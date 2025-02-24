@@ -13,7 +13,8 @@ router.post('/loyalty/claim', async (req, res, next) => {
       return res.status(401).json({ error: 'Not logged in' });
     }
     const usersCollection = req.db.collection('users');
-    const user = await usersCollection.findOne({ _id: req.session.userId });
+    const { ObjectId } = require('mongodb');
+    const user = await usersCollection.findOne({ _id: new ObjectId(req.session.userId) });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -22,7 +23,7 @@ router.post('/loyalty/claim', async (req, res, next) => {
     }
     user.dubpoints = (user.dubpoints || 0) + 10;
     await usersCollection.updateOne(
-      { _id: req.session.userId },
+      { _id: new ObjectId(req.session.userId) },
       { $set: { dubpoints: user.dubpoints } }
     );
     res.json({ success: true, dubpoints: user.dubpoints });
