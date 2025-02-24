@@ -138,8 +138,34 @@ app.use((req, res, next) => {
 // Centralized error handling middleware
 app.use((err, req, res, next) => {
   logger.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
+const express = require('express');
+const helmet = require('helmet'); // Ensure helmet is installed: npm install helmet
+const app = express();
+const port = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => logger.info(`DubVault running on port ${PORT}`));
+// Configure Helmet CSP to allow form actions to https://checkout.stripe.com
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+        // If you already have other script-src or style-src directives, keep them and just add the below line:
+        "form-action": ["'self'", "https://checkout.stripe.com"]
+      }
+    }
+  })
+);
+
+// If you’re setting CSP headers manually instead of using Helmet, you can do:
+// app.use((req, res, next) => {
+//   res.setHeader(
+//     'Content-Security-Policy',
+//     "default-src 'self'; form-action 'self' https://checkout.stripe.com; " +
+//     "script-src 'self' https://js.stripe.com; " +
+//     // ... any other directives ...
+//   );
+//   next();
+// });
+
+app.use(express.json());
