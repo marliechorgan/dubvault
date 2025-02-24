@@ -1,2 +1,5 @@
 .env
 /uploads/
+users.json
+tracks.json
+ratings.json

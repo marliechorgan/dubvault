@@ -1,29 +1,31 @@
 const express = require('express');
-const { getUsers, saveUsers } = require('../utils/dataStore');
 const router = express.Router();
 
+router.use((req, res, next) => {
+  req.db = req.app.locals.db; // Access the database from app.locals
+  next();
+});
+
+// POST /api/loyalty/claim - claim loyalty points (requires login)
 router.post('/loyalty/claim', async (req, res, next) => {
   try {
     if (!req.session.userId) {
       return res.status(401).json({ error: 'Not logged in' });
     }
-    const users = await getUsers();
-    const userIndex = users.findIndex(u => u.id === Number(req.session.userId));
-    if (userIndex === -1) {
+    const usersCollection = req.db.collection('users');
+    const user = await usersCollection.findOne({ _id: req.session.userId });
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    // Only allow claim if the user is a paid subscriber
-    if (!users[userIndex].isPaid) {
+    if (!user.isPaid) {
       return res.status(400).json({ error: 'Not a paid subscriber' });
     }
-    // Initialize dubpoints if not present
-    if (typeof users[userIndex].dubpoints !== 'number') {
-      users[userIndex].dubpoints = 0;
-    }
-    // Increment dubpoints by 10
-    users[userIndex].dubpoints += 10;
-    await saveUsers(users);
-    res.json({ success: true, dubpoints: users[userIndex].dubpoints });
+    user.dubpoints = (user.dubpoints || 0) + 10;
+    await usersCollection.updateOne(
+      { _id: req.session.userId },
+      { $set: { dubpoints: user.dubpoints } }
+    );
+    res.json({ success: true, dubpoints: user.dubpoints });
   } catch (err) {
     next(err);
   }

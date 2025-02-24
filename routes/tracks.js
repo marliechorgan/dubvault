@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
-const { getTracks, saveTracks, getRatings, saveRatings } = require('../utils/dataStore');
+const { getRatings, saveRatings } = require('../utils/dataStore'); // Keep JSON for ratings if not migrated
 const router = express.Router();
 
 const multer = require('multer');
@@ -25,16 +25,21 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage });
 
-// GET /api/tracks - return all tracks with average ratings
-// BUT in your index.js, you only show "approved" tracks to the public. If you want all statuses, remove the filter in index.js or handle here.
+router.use((req, res, next) => {
+  req.db = req.app.locals.db; // Access the database from app.locals
+  next();
+});
+
+// GET /api/tracks - return all approved tracks with average ratings
 router.get('/tracks', async (req, res, next) => {
   try {
-    const allTracks = await getTracks();
-    const ratings = await getRatings();
+    const tracksCollection = req.db.collection('tracks');
+    const allTracks = await tracksCollection.find({ status: 'approved' }).toArray();
+    const ratings = getRatings(); // Use existing JSON for ratings if not migrated
 
     // Merge average rating
     const mergedTracks = allTracks.map(t => {
-      const trackRatings = ratings.filter(r => String(r.trackId) === String(t.id));
+      const trackRatings = ratings.filter(r => String(r.trackId) === String(t._id));
       let avgRating = trackRatings.length
         ? parseFloat(
             (
@@ -75,20 +80,20 @@ router.post('/submit', upload.fields([{ name: 'trackFile' }, { name: 'artwork' }
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
 
-    const localTracks = await getTracks();
+    const tracksCollection = req.db.collection('tracks');
     const newTrack = {
-      id: Date.now(),
+      _id: Date.now().toString(), // Use a string ID for simplicity (MongoDB will generate ObjectId by default, but this matches your JSON)
       title: title || 'Untitled',
       artist: artist || 'Unknown Artist',
       genre: genre || 'Unknown',
       filePath: trackFile.path, // This is Cloudinary path if using Cloudinary
       artworkPath: artworkFile ? artworkFile.path : null,
       expiresOn: sixMonthsFromNow.toISOString(),
-      status: 'pending' // Mark new submissions as pending
+      status: 'pending', // Mark new submissions as pending
+      artistId: req.session.userId // Link to the user who submitted
     };
 
-    localTracks.push(newTrack);
-    await saveTracks(localTracks);
+    await tracksCollection.insertOne(newTrack);
 
     res.send(`
       <h1>Track Submitted Successfully!</h1>
@@ -113,16 +118,16 @@ router.post('/submit', upload.fields([{ name: 'trackFile' }, { name: 'artwork' }
 // POST /api/vote - vote on a track (requires login)
 router.post('/vote', async (req, res, next) => {
   try {
-    if (!req.session.userId)
+    if (!req.session.userId) {
       return res.status(401).json({ error: 'Not logged in' });
+    }
 
     const { trackId, vote } = req.body;
-    const ratings = await getRatings();
+    const ratingsCollection = req.db.collection('ratings'); // Create a ratings collection in MongoDB if not using JSON
 
     // If a user has already voted, you might want to overwrite or block.
     // For now, we just push a new rating entry.
-    ratings.push({ trackId, userId: req.session.userId, vote });
-    await saveRatings(ratings);
+    await ratingsCollection.insertOne({ trackId, userId: req.session.userId, vote });
 
     res.json({ success: true });
   } catch (err) {

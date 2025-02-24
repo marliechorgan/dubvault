@@ -1,8 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
-const { getUsers, saveUsers } = require('../utils/dataStore');
 const router = express.Router();
+
+router.use((req, res, next) => {
+  req.db = req.app.locals.db; // Access the database from app.locals
+  next();
+});
 
 // POST /api/register
 router.post(
@@ -12,25 +16,29 @@ router.post(
   async (req, res, next) => {
     try {
       const errors = validationResult(req);
-      if (!errors.isEmpty())
+      if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
+      }
 
       const { username, password } = req.body;
-      const users = await getUsers();
-      if (users.some(u => u.username === username))
+      const usersCollection = req.db.collection('users');
+      const existingUser = await usersCollection.findOne({ username });
+      if (existingUser) {
         return res.status(400).json({ error: 'Username already taken' });
+      }
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = {
-        id: Date.now(),
         username,
         password: hashedPassword,
         isPaid: false,
-        tier: null
+        tier: null,
+        dubpoints: 0,
+        createdAt: new Date(),
       };
-      users.push(newUser);
-      await saveUsers(users);
-      req.session.userId = newUser.id;
+      await usersCollection.insertOne(newUser);
+
+      req.session.userId = newUser._id.toString(); // MongoDB generates an _id
       req.session.save(err => {
         if (err) return next(err);
         res.json({ success: true, redirect: '/profile.html' });
@@ -49,20 +57,23 @@ router.post(
   async (req, res, next) => {
     try {
       const errors = validationResult(req);
-      if (!errors.isEmpty())
+      if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
+      }
 
       const { username, password } = req.body;
-      const users = await getUsers();
-    const user = users.find(u => u.id === Number(req.session.userId));
-      if (!user)
+      const usersCollection = req.db.collection('users');
+      const user = await usersCollection.findOne({ username });
+      if (!user) {
         return res.status(400).json({ error: 'Invalid username or password' });
+      }
 
       const match = await bcrypt.compare(password, user.password);
-      if (!match)
+      if (!match) {
         return res.status(400).json({ error: 'Invalid username or password' });
+      }
 
-      req.session.userId = user.id;
+      req.session.userId = user._id.toString();
       req.session.save(err => {
         if (err) return next(err);
         res.json({ success: true, redirect: '/profile.html' });
@@ -84,24 +95,22 @@ router.post('/logout', (req, res, next) => {
 // GET /api/me
 router.get('/me', async (req, res, next) => {
   try {
-    console.log('GET /api/me - Full session:', req.session);
     if (!req.session.userId) {
-      console.log('No userId in session');
-      return res.status(401).json({ error: 'Not logged in. Please log in to access this resource.' });
+      return res.status(401).json({ error: 'Not logged in' });
     }
-    const users = await getUsers();
-    console.log('Session userId:', req.session.userId, 'Type:', typeof req.session.userId);
-    console.log('Users:', users.map(u => ({ id: u.id, username: u.username })));
-    const user = users.find(u => u.id === Number(req.session.userId));
+    const usersCollection = req.db.collection('users');
+    const user = await usersCollection.findOne({ _id: req.session.userId });
     if (!user) {
-      console.log('User not found for userId:', req.session.userId);
       return res.status(404).json({ error: 'User not found' });
     }
-    console.log('Found user:', user);
-    res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier, dubpoints: user.dubpoints !== undefined ? user.dubpoints : 0 });
+    res.json({
+      username: user.username,
+      isPaid: user.isPaid,
+      tier: user.tier,
+      dubpoints: user.dubpoints,
+    });
   } catch (err) {
-    console.error('Error in /api/me:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 });
 

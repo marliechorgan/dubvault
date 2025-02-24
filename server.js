@@ -8,15 +8,33 @@ const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
 const logger = require('./utils/logger');
-
-// Import Routes
-const authRoutes = require('./routes/auth');
-const tracksRoutes = require('./routes/tracks');
-const paymentsRoutes = require('./routes/payments');
-const loyaltyRoutes = require('./routes/loyalty');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const app = express();
 app.set('trust proxy', 1);
+
+// MongoDB Connection
+const client = new MongoClient(process.env.MONGO_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log('Connected to MongoDB Atlas');
+    const db = client.db('dubvault'); // Use 'dubvault' as the database name
+    app.locals.db = db; // Store the database instance in app.locals for routes
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1); // Exit if connection fails
+  }
+}
+
+connectDB();
 
 // Security middleware
 app.use(
@@ -45,7 +63,6 @@ app.use(
 app.use(cors());
 app.use(compression());
 
-// Rate limiter for API endpoints
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -53,7 +70,6 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// Session middleware
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'some_secret_key',
@@ -68,22 +84,24 @@ app.use(
   })
 );
 
-// Parsing middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Mount routes
+// Mount routes (update these to use MongoDB)
+const authRoutes = require('./routes/auth');
+const tracksRoutes = require('./routes/tracks');
+const paymentsRoutes = require('./routes/payments');
+const loyaltyRoutes = require('./routes/loyalty');
+
 app.use('/api', authRoutes);
 app.use('/api', tracksRoutes);
 app.use('/api', loyaltyRoutes);
-app.use(paymentsRoutes); // mount at root to match /create-checkout-session
+app.use(paymentsRoutes);
 
-// Static file serving
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve HTML pages for non-API routes
 app.get('/submit.html', (req, res) => {
   if (!req.session || !req.session.userId) {
     return res
@@ -114,7 +132,6 @@ app.get('/tracks', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'tracks.html'))
 );
 
-// Admin login endpoint (Mock admin login – replace with secure auth later)
 app.post('/api/admin-login', (req, res) => {
   if (req.body.password === 'admin123') {
     req.session.isAdmin = true;
@@ -128,19 +145,20 @@ app.get('/api/config', (req, res) => {
   res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '' });
 });
 
-// 404 handler
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// Centralized error handling middleware
 app.use((err, req, res, next) => {
   logger.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+// Ensure the client closes when the app shuts down
+process.on('SIGTERM', () => client.close());
+process.on('SIGINT', () => client.close());
