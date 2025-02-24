@@ -7,15 +7,21 @@
 </head>
 <body>
   <header class="header fade-in glitch-hover">
-    <h1 class="pulse">Admin Dashboard</h1>
+    <img src="/logo.jpg" alt="DubVault Logo" class="logo slide-in-left">
     <nav class="nav">
-      <a href="/" class="nav-item">Home</a>
-      <a href="/tracks" class="nav-item">Tracks</a>
-      <a href="/admin.html" class="nav-item active">Admin</a>
+      <a href="/" class="nav-item slide-in-right">Home</a>
+      <a href="/about.html" class="nav-item slide-in-right">About</a>
+      <a href="/tracks" class="nav-item slide-in-right">Tracks</a>
+      <a href="/submit.html" class="nav-item slide-in-right">Submit</a>
+      <a href="/profile.html" class="nav-item slide-in-right">My Profile</a>
+      <a href="/faq.html" class="nav-item slide-in-right">FAQ</a>
+      <a href="/login.html" class="nav-item slide-in-right">Login</a>
+      <a href="/admin.html" class="nav-item slide-in-right active">Admin</a>
     </nav>
   </header>
 
   <main class="content-container fade-in">
+    <h1 class="pulse">Admin Dashboard</h1>
     <h2>Pending Tracks</h2>
     <div id="pending-tracks"></div>
   </main>
@@ -72,7 +78,7 @@
           body: JSON.stringify({ trackId, action })
         });
         if (response.ok) {
-          alert(`Track #${trackId} ${action}ed.`);
+          alert(\`Track #\${trackId} \${action}ed.\`);
           loadPendingTracks();
         } else {
           alert('Error approving/rejecting track.');
