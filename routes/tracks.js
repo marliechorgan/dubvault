@@ -1,7 +1,5 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs').promises;
-const { getRatings, saveRatings } = require('../utils/dataStore'); // Keep JSON for ratings if not migrated
 const router = express.Router();
 
 const multer = require('multer');
@@ -34,12 +32,12 @@ router.use((req, res, next) => {
 router.get('/tracks', async (req, res, next) => {
   try {
     const tracksCollection = req.db.collection('tracks');
+    const ratingsCollection = req.db.collection('ratings');
     const allTracks = await tracksCollection.find({ status: 'approved' }).toArray();
-    const ratings = getRatings(); // Use existing JSON for ratings if not migrated
 
     // Merge average rating
-    const mergedTracks = allTracks.map(t => {
-      const trackRatings = ratings.filter(r => String(r.trackId) === String(t._id));
+    const mergedTracks = await Promise.all(allTracks.map(async (t) => {
+      const trackRatings = await ratingsCollection.find({ trackId: String(t._id) }).toArray();
       let avgRating = trackRatings.length
         ? parseFloat(
             (
@@ -49,7 +47,7 @@ router.get('/tracks', async (req, res, next) => {
           )
         : null;
       return { ...t, avgRating };
-    });
+    }));
 
     return res.json(mergedTracks);
   } catch (err) {
@@ -123,7 +121,7 @@ router.post('/vote', async (req, res, next) => {
     }
 
     const { trackId, vote } = req.body;
-    const ratingsCollection = req.db.collection('ratings'); // Create a ratings collection in MongoDB if not using JSON
+    const ratingsCollection = req.db.collection('ratings');
 
     // If a user has already voted, you might want to overwrite or block.
     // For now, we just push a new rating entry.
