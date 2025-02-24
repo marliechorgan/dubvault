@@ -71,16 +71,16 @@ app.use(
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Static file serving
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Mount routes
 app.use('/api', authRoutes);
 app.use('/api', tracksRoutes);
 app.use('/api', paymentsRoutes);
 app.use('/api', loyaltyRoutes);
+
+// Static file serving
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/artworks', express.static(path.join(__dirname, 'artworks')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve HTML pages for non-API routes
 

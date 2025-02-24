@@ -84,6 +84,7 @@ router.post('/logout', (req, res, next) => {
 // GET /api/me
 router.get('/me', async (req, res, next) => {
   try {
+    console.log('GET /api/me - Full session:', req.session);
     if (!req.session.userId) {
       console.log('No userId in session');
       return res.status(401).json({ error: 'Not logged in. Please log in to access this resource.' });
@@ -96,6 +97,7 @@ router.get('/me', async (req, res, next) => {
       console.log('User not found for userId:', req.session.userId);
       return res.status(404).json({ error: 'User not found' });
     }
+    console.log('Found user:', user);
     res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier, dubpoints: user.dubpoints !== undefined ? user.dubpoints : 0 });
   } catch (err) {
     console.error('Error in /api/me:', err);
