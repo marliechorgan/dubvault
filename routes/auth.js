@@ -54,7 +54,7 @@ router.post(
 
       const { username, password } = req.body;
       const users = await getUsers();
-    const user = users.find(u => u.username === username);
+    const user = users.find(u => u.id === Number(req.session.userId));
       if (!user)
         return res.status(400).json({ error: 'Invalid username or password' });
 

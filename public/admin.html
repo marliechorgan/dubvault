@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - DubVault</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="header fade-in glitch-hover">
+    <h1 class="pulse">Admin Dashboard</h1>
+    <nav class="nav">
+      <a href="/" class="nav-item">Home</a>
+      <a href="/tracks" class="nav-item">Tracks</a>
+      <a href="/admin.html" class="nav-item active">Admin</a>
+    </nav>
+  </header>
+
+  <main class="content-container fade-in">
+    <h2>Pending Tracks</h2>
+    <div id="pending-tracks"></div>
+  </main>
+
+  <footer class="footer fade-in glitch-hover">
+    <p class="fade-in">© 2025 DubVault. Admin Only.</p>
+  </footer>
+
+  <script>
+    async function loadPendingTracks() {
+      try {
+        const response = await fetch('/api/pending-tracks', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          document.getElementById('pending-tracks').innerHTML =
+            '<p>Not Authorized or no data.</p>';
+          return;
+        }
+        const tracks = await response.json();
+        if (!tracks.length) {
+          document.getElementById('pending-tracks').innerHTML =
+            '<p>No pending tracks.</p>';
+          return;
+        }
+        const html = tracks
+          .map(t => {
+            return `
+              <div class="track-card">
+                <h3>${t.title} by ${t.artist}</h3>
+                <p><strong>Genre:</strong> ${t.genre || 'Unknown'}</p>
+                <p><strong>Expires On:</strong> ${new Date(t.expiresOn).toDateString()}</p>
+                <p><strong>Status:</strong> ${t.status}</p>
+                <button onclick="reviewTrack(${t.id}, 'approve')">Approve</button>
+                <button onclick="reviewTrack(${t.id}, 'reject')">Reject</button>
+              </div>
+            `;
+          })
+          .join('');
+        document.getElementById('pending-tracks').innerHTML = html;
+      } catch (err) {
+        document.getElementById('pending-tracks').innerHTML =
+          '<p>Could not load pending tracks. Check console.</p>';
+        console.error(err);
+      }
+    }
+
+    async function reviewTrack(trackId, action) {
+      try {
+        const response = await fetch('/api/review-track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ trackId, action })
+        });
+        if (response.ok) {
+          alert(`Track #${trackId} ${action}ed.`);
+          loadPendingTracks();
+        } else {
+          alert('Error approving/rejecting track.');
+        }
+      } catch (err) {
+        alert('Error sending review request.');
+      }
+    }
+
+    loadPendingTracks();
+  </script>
+</body>
+</html>
