@@ -14,27 +14,36 @@ const app = express();
 app.set('trust proxy', 1);
 
 // MongoDB Connection
-const client = new MongoClient(process.env.MONGO_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-
+let client;
 async function connectDB() {
   try {
+    client = new MongoClient(process.env.MONGO_URI, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      }
+    });
     await client.connect();
     console.log('Connected to MongoDB Atlas');
-    const db = client.db('dubvault'); // Use 'dubvault' as the database name
+    const db = client.db('dubvault');
     app.locals.db = db; // Store the database instance in app.locals for routes
   } catch (err) {
     console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit if connection fails
+    app.locals.db = null; // Set to null if connection fails
   }
 }
 
 connectDB();
+
+// Middleware to check if db is available
+app.use((req, res, next) => {
+  if (!app.locals.db) {
+    return res.status(503).json({ error: 'Database service unavailable. Please try again later.' });
+  }
+  req.db = app.locals.db;
+  next();
+});
 
 // Security middleware
 app.use(
@@ -154,11 +163,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000; // Match Render's default port
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
 // Ensure the client closes when the app shuts down
-process.on('SIGTERM', () => client.close());
-process.on('SIGINT', () => client.close());
+process.on('SIGTERM', () => client && client.close());
+process.on('SIGINT', () => client && client.close());
