@@ -112,6 +112,10 @@ app.get('/cancel.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'))
 );
 
+app.get('/tracks', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public', 'tracks.html'))
+);
+
 // Admin login endpoint (Mock admin login – replace with secure auth later)
 app.post('/api/admin-login', (req, res) => {
     if (req.body.password === 'admin123') {
@@ -121,6 +125,10 @@ app.post('/api/admin-login', (req, res) => {
       res.status(401).json({ error: 'Invalid credentials' });
     }
   });
+
+app.get('/api/config', (req, res) => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '' });
+});
 
 // 404 handler
 app.use((req, res, next) => {

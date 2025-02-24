@@ -5,7 +5,7 @@ const path = require('path');
 const { getUsers, saveUsers } = require('../utils/dataStore');
 const router = express.Router();
 
-const stripeInstance = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+const stripeInstance = Stripe(process.env.STRIPE_SECRET_KEY);
 const Environment =
   process.env.NODE_ENV === 'production'
     ? paypal.core.LiveEnvironment

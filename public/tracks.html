@@ -43,6 +43,15 @@
 
   <script>
     let tracks = [];
+    function showToast(message) {
+      const toastEl = document.getElementById('toast');
+      if (!toastEl) return;
+      toastEl.textContent = message;
+      toastEl.classList.add('show');
+      setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 3000);
+    }
 
     async function loadTracks() {
       try {
@@ -86,13 +95,13 @@
               credentials: 'include'
             });
             if (response.ok) {
-              alert('Vote locked in!');
+            showToast('Vote locked in!');
               loadTracks();
             } else {
-              alert('Log in to vote, fam.');
+            showToast('Log in to vote, fam.');
             }
           } catch (err) {
-            alert('Voting glitch—try again.');
+            showToast('Voting glitch—try again.');
           }
         });
       });
@@ -123,7 +132,7 @@ el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
           const trackId = btn.getAttribute('data-track-id');
           const input = btn.previousElementSibling;
           if (input.files.length > 0) {
-            alert('Video upload coming soon!');
+            showToast('Video upload coming soon!');
             // Implement actual upload logic here
           }
         });
@@ -144,14 +153,14 @@ el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
                 credentials: 'include'
               });
               if (response.ok) {
-                alert('Comment posted!');
+                showToast('Comment posted!');
                 input.value = '';
                 loadTracks();
               } else {
-                alert('Log in to comment, fam.');
+                showToast('Log in to comment, fam.');
               }
             } catch (err) {
-              alert('Commenting glitch—try again.');
+              showToast('Commenting glitch—try again.');
             }
           }
         });
@@ -199,5 +208,6 @@ el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
       });
     });
   </script>
+  <div id="toast" class="toast"></div>
 </body>
 </html>
