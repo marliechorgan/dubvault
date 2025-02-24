@@ -22,27 +22,16 @@ router.post('/create-checkout-session', async (req, res, next) => {
   try {
     if (!req.session.userId)
       return res.status(401).send('You must be logged in first.');
-    const { tier } = req.body;
-    const unitAmount = tier === 'basic' ? 1000 : 1500;
-    const productName =
-      tier === 'basic'
-        ? 'DubVault Basic Subscription'
-        : 'DubVault Premium Subscription';
     const session = await stripeInstance.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [
         {
-          price_data: {
-            currency: 'gbp',
-            product_data: { name: productName },
-            unit_amount: unitAmount,
-            recurring: { interval: 'month' }
-          },
+          price: 'prod_RUTqP84xE1Pnmp', // Pre-existing £20/month subscription price ID
           quantity: 1
         }
       ],
-      success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`,
+      success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=standard`,
       cancel_url: `${req.headers.origin}/cancel.html`
     });
     res.redirect(303, session.url);

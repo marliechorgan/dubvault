@@ -74,8 +74,8 @@ app.use(express.json());
 // Mount routes
 app.use('/api', authRoutes);
 app.use('/api', tracksRoutes);
-app.use('/api', paymentsRoutes);
 app.use('/api', loyaltyRoutes);
+app.use(paymentsRoutes); // Mount at root to match /create-checkout-session
 
 // Static file serving
 app.use(express.static(path.join(__dirname, 'public')));
