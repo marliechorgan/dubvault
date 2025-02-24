@@ -63,7 +63,12 @@
         spinner.style.display = 'none';
         const rawText = await response.text();
         console.log('Raw response from /api/me:', rawText);
-        const sanitizedText = rawText.trim();
+        console.log('Response length:', rawText.length);
+        console.log('First character code:', rawText.charCodeAt(0));
+        let sanitizedText = rawText.trim();
+        if (sanitizedText.charCodeAt(0) === 0xFEFF) {
+          sanitizedText = sanitizedText.slice(1);
+        }
         console.log('Sanitized response:', sanitizedText);
         let data;
         try {
@@ -90,20 +95,44 @@
         logoutBtn.style.display = 'block';
 
         // Fetch user tracks
-        const tracksResponse = await fetch('/api/user-tracks', { credentials: 'include' });
-        const userTracks = await tracksResponse.json();
-        userTracksEl.style.display = 'block';
-        userTracksEl.querySelector('.tracks-list').innerHTML = userTracks.length > 0 
-          ? userTracks.map(t => `<div class="track-item">${t.title} - ${t.status}</div>`).join('') 
-          : '<p>No tracks yet—drop some fire!</p>';
+        try {
+          const tracksResponse = await fetch('/api/user-tracks', { credentials: 'include' });
+          if (!tracksResponse.ok) {
+            console.error('Failed to fetch tracks, status:', tracksResponse.status);
+            userTracksEl.style.display = 'block';
+            userTracksEl.querySelector('.tracks-list').innerHTML = '<p>No tracks available—check back later!</p>';
+          } else {
+            const userTracks = await tracksResponse.json();
+            userTracksEl.style.display = 'block';
+            userTracksEl.querySelector('.tracks-list').innerHTML = userTracks.length > 0
+              ? userTracks.map(t => `<div class="track-item">${t.title} - ${t.status}</div>`).join('')
+              : '<p>No tracks yet—drop some fire!</p>';
+          }
+        } catch (tracksErr) {
+          console.error('Tracks fetch error:', tracksErr);
+          userTracksEl.style.display = 'block';
+          userTracksEl.querySelector('.tracks-list').innerHTML = '<p>Error loading tracks.</p>';
+        }
 
         // Fetch voting history
-        const votesResponse = await fetch('/api/user-votes', { credentials: 'include' });
-        const userVotes = await votesResponse.json();
-        userVotesEl.style.display = 'block';
-        userVotesEl.querySelector('.votes-list').innerHTML = userVotes.length > 0 
-          ? userVotes.map(v => `<div class="vote-item">Voted ${v.vote} on ${v.trackTitle}</div>`).join('') 
-          : '<p>No votes yet—start rating!</p>';
+        try {
+          const votesResponse = await fetch('/api/user-votes', { credentials: 'include' });
+          if (!votesResponse.ok) {
+            console.error('Failed to fetch votes, status:', votesResponse.status);
+            userVotesEl.style.display = 'block';
+            userVotesEl.querySelector('.votes-list').innerHTML = '<p>No voting history available.</p>';
+          } else {
+            const userVotes = await votesResponse.json();
+            userVotesEl.style.display = 'block';
+            userVotesEl.querySelector('.votes-list').innerHTML = userVotes.length > 0
+              ? userVotes.map(v => `<div class="vote-item">Voted ${v.vote} on ${v.trackTitle}</div>`).join('')
+              : '<p>No votes yet—start rating!</p>';
+          }
+        } catch (votesErr) {
+          console.error('Votes fetch error:', votesErr);
+          userVotesEl.style.display = 'block';
+          userVotesEl.querySelector('.votes-list').innerHTML = '<p>Error loading voting history.</p>';
+        }
 
         // Cancel subscription logic
         const cancelBtn = document.querySelector('.cancel-btn');
