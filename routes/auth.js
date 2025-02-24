@@ -84,14 +84,22 @@ router.post('/logout', (req, res, next) => {
 // GET /api/me
 router.get('/me', async (req, res, next) => {
   try {
-    if (!req.session.userId)
+    if (!req.session.userId) {
+      console.log('No userId in session');
       return res.status(401).json({ error: 'Not logged in. Please log in to access this resource.' });
+    }
     const users = await getUsers();
-    const user = users.find(u => u.id === req.session.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    console.log('Session userId:', req.session.userId, 'Type:', typeof req.session.userId);
+    console.log('Users:', users.map(u => ({ id: u.id, username: u.username })));
+    const user = users.find(u => u.id === Number(req.session.userId));
+    if (!user) {
+      console.log('User not found for userId:', req.session.userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
     res.json({ username: user.username, isPaid: user.isPaid, tier: user.tier, dubpoints: user.dubpoints !== undefined ? user.dubpoints : 0 });
   } catch (err) {
-    next(err);
+    console.error('Error in /api/me:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

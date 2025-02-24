@@ -63,8 +63,17 @@
         spinner.style.display = 'none';
         if (!response.ok) {
           statusEl.style.display = 'block';
-          statusEl.innerHTML = `<h2 class="pulse">Status</h2><p>${response.status === 401 ? "You’re not logged in." : "Error loading profile."}</p>` +
-            (response.status === 401 ? '<a href="/login.html" class="button inline-btn">Login</a>' : '');
+          let errorMessage = `Error loading profile. Status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            console.log('Error response (JSON):', errorData);
+            errorMessage += ` - ${errorData.error || 'Unknown error'}`;
+          } catch (jsonErr) {
+            const rawText = await response.text();
+            console.log('Error response (raw):', rawText);
+            errorMessage += ` - Failed to parse response (check console)`;
+          }
+          statusEl.innerHTML = `<h2 class="pulse">Status</h2><p>${response.status === 401 ? "You’re not logged in. <a href='/login.html' class='button inline-btn'>Login</a>" : errorMessage}</p>`;
           return;
         }
         const data = await response.json();

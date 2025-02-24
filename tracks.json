@@ -1,11 +1,38 @@
 [
-  
   {
     "id": 1738092533611,
     "title": "RUSH ME",
     "artist": "TOASTED",
     "filePath": "uploads/RUSH ME DEMO 3.wav",
     "artworkPath": "artworks/453CF750-02E9-48E7-9D10-260844ED0E8F.JPG",
-    "expiresOn": "2025-03-28T19:28:53.608Z"
+    "expiresOn": "2025-03-28T19:28:53.608Z",
+    "status": "approved"
+  },
+  {
+    "id": 1738092533612,
+    "title": "Bassline Banger",
+    "artist": "DJ Vibes",
+    "filePath": "placeholder.mp3",
+    "artworkPath": "placeholder.jpg",
+    "expiresOn": "2023-11-01T00:00:00.000Z",
+    "status": "approved"
+  },
+  {
+    "id": 1738092533613,
+    "title": "Garage Groove",
+    "artist": "MC Rhythm",
+    "filePath": "placeholder.mp3",
+    "artworkPath": "placeholder.jpg",
+    "expiresOn": "2023-12-01T00:00:00.000Z",
+    "status": "approved"
+  },
+  {
+    "id": 1738092533614,
+    "title": "House Heat",
+    "artist": "Producer X",
+    "filePath": "placeholder.mp3",
+    "artworkPath": "placeholder.jpg",
+    "expiresOn": "2024-01-01T00:00:00.000Z",
+    "status": "approved"
   }
 ]
