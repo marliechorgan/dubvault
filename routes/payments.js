@@ -22,18 +22,18 @@ router.post('/create-checkout-session', async (req, res, next) => {
   try {
     console.log('POST /create-checkout-session - Session:', req.session);
     if (!req.session.userId) {
-    router.post('/create-checkout-session', async (req, res, next) => {
-  try {
-    if (!req.session.userId)
       return res.status(401).send('You must be logged in first.');
+    }
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.get('host');
     const baseUrl = `${protocol}://${host}`;
     console.log('Base URL for checkout session:', baseUrl);
+
     const successUrl = `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&tier=standard`;
     const cancelUrl = `${baseUrl}/cancel.html`;
     console.log('Success URL:', successUrl);
     console.log('Cancel URL:', cancelUrl);
+
     const session = await stripeInstance.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -46,15 +46,16 @@ router.post('/create-checkout-session', async (req, res, next) => {
       success_url: successUrl,
       cancel_url: cancelUrl
     });
+
     console.log('Stripe session created:', session.id);
     res.redirect(303, session.url);
   } catch (err) {
     console.error('Error in /create-checkout-session:', err.message);
     console.error('Stack trace:', err.stack);
-    res.status(500).json({ error: 'Failed to create checkout session', details: err.message });
-  }
-});
-    res.status(500).json({ error: 'Failed to create checkout session', details: err.message });
+    res.status(500).json({
+      error: 'Failed to create checkout session',
+      details: err.message
+    });
   }
 });
 
@@ -82,12 +83,14 @@ router.get('/payment-success', async (req, res, next) => {
 // POST /cancel-subscription - cancel user subscription (requires login)
 router.post('/cancel-subscription', async (req, res, next) => {
   try {
-    if (!req.session.userId)
+    if (!req.session.userId) {
       return res.status(401).json({ error: 'Not logged in' });
+    }
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === req.session.userId);
-    if (userIndex === -1)
+    if (userIndex === -1) {
       return res.status(404).json({ error: 'User not found' });
+    }
     users[userIndex].isPaid = false;
     users[userIndex].tier = null;
     await saveUsers(users);
