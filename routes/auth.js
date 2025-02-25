@@ -63,13 +63,17 @@ router.post(
       }
 
       const { username, password } = req.body;
+      console.log('Login attempt with username:', username);
       const usersCollection = req.db.collection('users');
-        const user = await usersCollection.findOne({ _id: new ObjectId(req.session.userId) });
+      const user = await usersCollection.findOne({ username });
       if (!user) {
+        console.log('User not found for username:', username);
         return res.status(400).json({ error: 'Invalid username or password' });
       }
 
+      console.log('Found user:', user);
       const match = await bcrypt.compare(password, user.password);
+      console.log('Password match:', match);
       if (!match) {
         return res.status(400).json({ error: 'Invalid username or password' });
       }
