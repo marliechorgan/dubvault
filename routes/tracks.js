@@ -13,6 +13,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.error('Cloudinary credentials are missing in .env file');
+}
+
 // Use CloudinaryStorage with Multer
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -51,6 +55,7 @@ router.get('/tracks', async (req, res, next) => {
 
     return res.json(mergedTracks);
   } catch (err) {
+    logger.error('Error fetching tracks: ' + err.stack);
     next(err);
   }
 });
@@ -72,6 +77,11 @@ router.post('/submit', upload.fields([{ name: 'trackFile' }, { name: 'artwork' }
       return res
         .status(400)
         .send('<h1>No Track File</h1><p>Please upload an audio file (MP3).</p>');
+    }
+
+    // Check Cloudinary configuration
+    if (!cloudinary.config().cloud_name) {
+      return res.status(500).send('<h1>Cloudinary Configuration Error</h1><p>Cloudinary credentials are missing or invalid. Check your .env file.</p>');
     }
 
     // 6-month expiry from now
@@ -109,6 +119,7 @@ router.post('/submit', upload.fields([{ name: 'trackFile' }, { name: 'artwork' }
       <p><a href="/tracks">View All Tracks</a></p>
     `);
   } catch (err) {
+    logger.error('Error submitting track: ' + err.stack);
     next(err);
   }
 });
@@ -129,6 +140,7 @@ router.post('/vote', async (req, res, next) => {
 
     res.json({ success: true });
   } catch (err) {
+    logger.error('Error voting on track: ' + err.stack);
     next(err);
   }
 });
